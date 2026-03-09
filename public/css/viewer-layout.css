@@ -1,0 +1,51 @@
+/* Custom styles for Viewer role - Hide sidebar and replace hamburger with logo */
+
+/* Hide sidebar toggle button */
+body.viewer-layout .navbar-nav .nav-link[data-widget="pushmenu"],
+body.viewer-layout .navbar-nav .sidebar-toggle {
+    display: none !important;
+}
+
+/* Hide main sidebar completely */
+body.viewer-layout .main-sidebar {
+    display: none !important;
+}
+
+/* Adjust content wrapper to use full width */
+body.viewer-layout .content-wrapper {
+    margin-left: 0 !important;
+}
+
+/* Add logo at the very left of navbar */
+body.viewer-layout .navbar-nav:first-of-type::before {
+    content: "";
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    background-image: url('/vendor/adminlte/dist/img/favicon.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-right: 0;
+    margin-left: 0;
+    vertical-align: middle;
+}
+
+/* Adjust navbar padding to align with content */
+body.viewer-layout .main-header.navbar {
+    padding-left: 1rem !important;
+}
+
+/* Ensure footer also takes full width */
+body.viewer-layout .main-footer {
+    margin-left: 0 !important;
+}
+
+/* Override AdminLTE default margin for larger screens */
+@media (min-width: 768px) {
+    body.viewer-layout:not(.sidebar-mini-md):not(.sidebar-mini-xs):not(.layout-top-nav) .content-wrapper,
+    body.viewer-layout:not(.sidebar-mini-md):not(.sidebar-mini-xs):not(.layout-top-nav) .main-footer,
+    body.viewer-layout:not(.sidebar-mini-md):not(.sidebar-mini-xs):not(.layout-top-nav) .main-header {
+        margin-left: 0 !important;
+    }
+}
