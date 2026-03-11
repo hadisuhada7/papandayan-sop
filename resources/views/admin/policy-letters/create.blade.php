@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Papandayan | Edit Standard Operational')
+@section('title', 'Papandayan | Add Policy Letter')
 
 @section('plugins.TempusDominusBs4', true)
 @section('plugins.Summernote', true)
@@ -11,13 +11,13 @@
 @section('content_header')
     <div class="row mb-2">
         <div class="col-sm-6">
-            <h1>Edit Standard Operational</h1>
+            <h1>Add Policy Letter</h1>
         </div>
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.standard-operationals.index') }}">Standard Operationals</a></li>
-                <li class="breadcrumb-item active">Edit</li>
+                <li class="breadcrumb-item"><a href="{{ route('admin.policy-letters.index') }}">Policy Letters</a></li>
+                <li class="breadcrumb-item active">Add</li>
             </ol>
         </div>
     </div>
@@ -28,11 +28,10 @@
         <div class="col-12">
             <div class="card card-primary card-outline">
                 <div class="card-header">
-                    <h3 class="card-title">Form Standard Operational</h3>
+                    <h3 class="card-title">Form Policy Letter</h3>
                 </div>
-                <form method="POST" action="{{ route('admin.standard-operationals.update', $standardOperational) }}" enctype="multipart/form-data" class="form-horizontal">
+                <form method="POST" action="{{ route('admin.policy-letters.store') }}" enctype="multipart/form-data" class="form-horizontal">
                     @csrf
-                    @method('PUT')
                     <div class="card-body">
 
                         @if ($errors->any())
@@ -55,7 +54,7 @@
                                         <select class="form-control select2bs4" style="width: 100%;" id="company" name="company_id" required>
                                             <option value="">-- Select Company --</option>
                                             @foreach ($companies as $company)
-                                                <option value="{{ $company->id }}" {{ $company->id == $standardOperational->company_id ? 'selected' : '' }}>{{ $company->name }}</option>
+                                                <option value="{{ $company->id }}">{{ $company->name }}</option>
                                             @endforeach
                                         </select>
                                         <span class="error invalid-feedback">{{ $errors->first('company_id') }}</span>
@@ -65,16 +64,16 @@
                                     <label for="Category" class="col-sm-2 col-form-label">Category <span class="text-danger">*</span></label>
                                     <div class="col-sm-4">
                                         @php
-                                            $selectedCategoryIds = (array) old('category_ids', $standardOperational->categories->pluck('id')->toArray());
+                                            $selectedCategoryIds = (array) old('category_ids', []);
                                         @endphp
-                                        <select class="form-control select2-tags" style="width: 100%;" id="category" name="category_ids[]" multiple="multiple" data-placeholder="" required>
+                                        <select class="form-control select2-tags" style="width: 100%;" id="category" name="category_ids[]" multiple="multiple" data-placeholder="" required disabled>
                                             @foreach ($categories as $category)
                                                 <option value="{{ $category->id }}" {{ in_array($category->id, $selectedCategoryIds, true) ? 'selected' : '' }}>
                                                     {{ $category->name }}
                                                 </option>
                                             @endforeach
                                         </select>
-                                        <small class="text-muted">Categories based on selected Company.</small>
+                                        <small class="text-muted">Please select Company first.</small>
                                         <span class="error invalid-feedback">{{ $errors->first('category_ids') }}</span>
                                     </div>
                                 </div>
@@ -82,14 +81,14 @@
                                 <div class="form-group row">
                                     <label for="title" class="col-sm-2 col-form-label">Title <span class="text-danger">*</span></label>
                                     <div class="col-sm-6">
-                                        <input type="text" class="form-control" id="title" name="title" value="{{ $standardOperational->title }}" maxlength="255" placeholder="Title" required>
+                                        <input type="text" class="form-control" id="title" name="title" value="{{ old('title') }}" maxlength="255" placeholder="Title" required>
                                         <span class="error invalid-feedback">{{ $errors->first('title') }}</span>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label for="documentNumber" class="col-sm-2 col-form-label">Document Number <span class="text-danger">*</span></label>
                                     <div class="col-sm-6">
-                                        <input type="text" class="form-control" id="documentNumber" name="document_number" value="{{ $standardOperational->document_number }}" maxlength="100" placeholder="Document Number" required>
+                                        <input type="text" class="form-control" id="documentNumber" name="document_number" value="{{ old('document_number') }}" maxlength="100" placeholder="Document Number" required>
                                         <span class="error invalid-feedback">{{ $errors->first('document_number') }}</span>
                                     </div>
                                 </div>
@@ -97,7 +96,7 @@
                                     <label for="effectiveDate" class="col-sm-2 col-form-label">Effective Date <span class="text-danger">*</span></label>
                                     <div class="col-sm-4">
                                         <div class="input-group date" id="effectiveDate" data-target-input="nearest">
-                                            <input type="text" class="form-control datetimepicker-input" name="effective_date" value="{{ $standardOperational->effective_date ? $standardOperational->effective_date->format('d-m-Y') : '' }}" data-target="#effectiveDate" placeholder="dd-MM-yyyy" required/>
+                                            <input type="text" class="form-control datetimepicker-input" name="effective_date" value="{{ old('effective_date') }}" data-target="#effectiveDate" placeholder="dd-MM-yyyy" required/>
                                             <div class="input-group-append" data-target="#effectiveDate" data-toggle="datetimepicker">
                                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                                             </div>
@@ -109,7 +108,7 @@
                                     <label for="expiredDate" class="col-sm-2 col-form-label">Expired Date <span class="text-danger">*</span></label>
                                     <div class="col-sm-4">
                                         <div class="input-group date" id="expiredDate" data-target-input="nearest">
-                                            <input type="text" class="form-control datetimepicker-input" name="expired_date" value="{{ $standardOperational->expired_date ? $standardOperational->expired_date->format('d-m-Y') : '' }}" data-target="#expiredDate" placeholder="dd-MM-yyyy" required/>
+                                            <input type="text" class="form-control datetimepicker-input" name="expired_date" value="{{ old('expired_date') }}" data-target="#expiredDate" placeholder="dd-MM-yyyy" required/>
                                             <div class="input-group-append" data-target="#expiredDate" data-toggle="datetimepicker">
                                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                                             </div>
@@ -120,7 +119,7 @@
                                 <div class="form-group row">
                                     <label for="rules" class="col-sm-2 col-form-label">Rules <span class="text-danger">*</span></label>
                                     <div class="col-sm-10">
-                                        <textarea class="form-control" id="rules" name="rules" maxlength="65535" placeholder="Rules">{{ $standardOperational->rules }}</textarea>
+                                        <textarea class="form-control" id="rules" name="rules" maxlength="65535" placeholder="Rules">{{ old('rules') }}</textarea>
                                         <span class="error invalid-feedback">{{ $errors->first('rules') }}</span>
                                     </div>
                                 </div>
@@ -137,33 +136,14 @@
                                                     <tr>
                                                         <th style="width: 30px;">No</th>
                                                         <th style="width: 300px;">Name</th>
-                                                        <th style="width: 150px;">Type</th>
                                                         <th scope="col">Attachment</th>
                                                         <th style="width: 35px;">&nbsp;</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    @forelse($standardOperational->documents as $index => $document)
-                                                        <tr data-id="{{ $document->id }}" data-existing="true">
-                                                            <td>{{ $index + 1 }}</td>
-                                                            <td>{{ $document->name }}</td>
-                                                            <td>{{ strtoupper($document->type) }}</td>
-                                                            <td>
-                                                                <a href="{{ Storage::url($document->attachment) }}" target="_blank">
-                                                                    {{ basename($document->attachment) }}
-                                                                </a>
-                                                            </td>
-                                                            <td class="text-center">
-                                                                <button type="button" class="btn btn-sm btn-danger btn-delete-document" data-id="{{ $document->id }}">
-                                                                    <i class="fas fa-trash-alt"></i>
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    @empty
-                                                        <tr>
-                                                            <td colspan="5" class="text-center">No data available in table</td>
-                                                        </tr>
-                                                    @endforelse
+                                                    <tr>
+                                                        <td colspan="4" class="text-center">No data available in table</td>
+                                                    </tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -178,9 +158,9 @@
                         </div>
                     </div>
                     <div class="card-footer text-right">
-                        <a href="{{ route('admin.standard-operationals.index') }}" class="btn btn-default" style="margin-right: 5px">Back</a>
+                        <a href="{{ route('admin.policy-letters.index') }}" class="btn btn-default" style="margin-right: 5px">Back</a>
                         <button type="reset" class="btn btn-secondary" style="margin-right: 5px">Reset</button>
-                        <button type="submit" class="btn btn-primary">Update</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
                     </div>
                 </form>
             </div>
@@ -197,28 +177,9 @@
                         </div>
                         <div class="modal-body">
                             <form id="document-form" method="" action="" class="form-horizontal">
-                                <div class="form-group row">
-                                    <label for="document_name" class="col-sm-3 col-form-label">Name <span class="text-danger">*</span></label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control" id="document_name" name="document_name" maxlength="255" placeholder="Name" required>
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label for="document_type" class="col-sm-3 col-form-label">Type <span class="text-danger">*</span></label>
-                                    <div class="col-sm-2">
-                                        <div class="custom-control custom-radio" style="padding-top: 0.5rem;">
-                                            <input class="custom-control-input" type="radio" id="documentTypeSOP" name="document_type" value="sop" {{ old('document_type', $standardOperational->document_type) == 'sop' ? 'checked' : '' }} required>
-                                            <label for="documentTypeSOP" class="custom-control-label">SOP</label>
-                                        </div>
-                                        <span class="error invalid-feedback">{{ $errors->first('document_type') }}</span>
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <div class="custom-control custom-radio" style="padding-top: 0.5rem;">
-                                            <input class="custom-control-input" type="radio" id="documentTypeForm" name="document_type" value="form" {{ old('document_type', $standardOperational->document_type) == 'form' ? 'checked' : '' }} required>
-                                            <label for="documentTypeForm" class="custom-control-label">Form</label>
-                                        </div>
-                                        <span class="error invalid-feedback">{{ $errors->first('document_type') }}</span>
-                                    </div>
+                                <div class="form-group">
+                                    <label for="document_name">Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="document_name" name="document_name" maxlength="255" placeholder="Name" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="document_attachment">Attachment <span class="text-danger">*</span></label>
@@ -375,14 +336,8 @@
         let documentList = [];
         let documentIndex = 0;
         let myDropzone;
-        let existingDocumentIds = [];
         
         $(document).ready(function () {
-            // Initialize existing documents
-            @foreach($standardOperational->documents as $document)
-                existingDocumentIds.push('{{ $document->id }}');
-            @endforeach
-            
             // Initialize DatePicker
             $('#effectiveDate, #expiredDate').datetimepicker({
                 format: 'DD-MM-YYYY'
@@ -408,7 +363,6 @@
             myDropzone = new Dropzone("#documentDropzone", {
                 url: "/fake-upload",
                 autoProcessQueue: false,
-                clickable: true,
                 maxFiles: 1,
                 maxFilesize: 5,
                 acceptedFiles: '.pdf',
@@ -450,10 +404,6 @@
                 }
             });
 
-            // Store initial selected categories
-            const initialCategories = {!! json_encode($standardOperational->categories->pluck('id')->toArray()) !!};
-            const initialCompanyId = '{{ $standardOperational->company_id }}';
-
             // Handle company change
             $('#company').on('change', function() {
                 const companyId = $(this).val();
@@ -472,9 +422,7 @@
                             if (categories.length > 0) {
                                 // Populate categories
                                 categories.forEach(function(category) {
-                                    // Check if category should be selected (only if same company)
-                                    const isSelected = companyId === initialCompanyId && initialCategories.includes(category.id);
-                                    const option = new Option(category.name, category.id, isSelected, isSelected);
+                                    const option = new Option(category.name, category.id, false, false);
                                     $categorySelect.append(option);
                                 });
                                 $categorySelect.prop('disabled', false).trigger('change');
@@ -490,26 +438,15 @@
                 }
             });
 
-            // Trigger company change on page load to populate categories
-            if (initialCompanyId) {
-                $('#company').trigger('change');
-            }
-
             // Modal Save Button Handler
             $('#btn-modal-save').on('click', function() {
                 const name = $('#document_name').val().trim();
-                const type = $('input[name="document_type"]:checked').val();
                 const files = myDropzone.getAcceptedFiles();
                 
                 // Validate
                 if (!name) {
                     toastr.warning('Please enter document name.');
                     $('#document_name').focus();
-                    return;
-                }
-
-                if (!type) {
-                    toastr.warning('Please select document type.');
                     return;
                 }
                 
@@ -523,7 +460,6 @@
                 documentList.push({
                     index: documentIndex,
                     name: name,
-                    type: type,
                     file: file,
                     fileName: file.name
                 });
@@ -541,26 +477,16 @@
             // Function to update document table
             function updateDocumentTable() {
                 const tbody = $('#datagrid tbody');
-                const existingRows = tbody.find('tr[data-existing="true"]');
-                const existingCount = existingRows.length;
+                tbody.empty();
                 
-                // Remove new document rows
-                tbody.find('tr[data-existing!="true"]').remove();
-                
-                if (documentList.length === 0 && existingCount === 0) {
-                    tbody.empty().append('<tr><td colspan="5" class="text-center">No data available in table</td></tr>');
+                if (documentList.length === 0) {
+                    tbody.append('<tr><td colspan="4" class="text-center">No data available in table</td></tr>');
                 } else {
-                    // Remove "no data" row if exists
-                    tbody.find('td[colspan="5"]').closest('tr').remove();
-                    
-                    // Add new documents
                     documentList.forEach(function(doc, idx) {
-                        const rowNumber = existingCount + idx + 1;
                         const row = `
                             <tr data-index="${doc.index}">
-                                <td>${rowNumber}</td>
+                                <td>${idx + 1}</td>
                                 <td>${doc.name}</td>
-                                <td>${doc.type.toUpperCase()}</td>
                                 <td>${doc.fileName}</td>
                                 <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-danger btn-delete-document" data-index="${doc.index}">
@@ -571,50 +497,20 @@
                         `;
                         tbody.append(row);
                     });
-                    
-                    // Update row numbers for all rows
-                    tbody.find('tr').each(function(idx) {
-                        $(this).find('td:first').text(idx + 1);
-                    });
                 }
             }
 
             // Modal Delete Button Handler
             $(document).on('click', '.btn-delete-document', function() {
-                const id = $(this).data('id');
                 const index = $(this).data('index');
-                const row = $(this).closest('tr');
-                
-                // Check if it's an existing document or a new document
-                if (id !== undefined) {
-                    // Remove from existing document IDs
-                    existingDocumentIds = existingDocumentIds.filter(docId => docId !== id);
-                } else if (index !== undefined) {
-                    // Remove from new document list
-                    documentList = documentList.filter(doc => doc.index !== index);
-                }
-                
-                // Remove row
-                row.remove();
-                
-                // Check if table is empty
-                const tbody = $('#datagrid tbody');
-                if (tbody.find('tr').length === 0) {
-                    tbody.append('<tr><td colspan="4" class="text-center">No data available in table</td></tr>');
-                } else {
-                    // Update row numbers
-                    tbody.find('tr').each(function(idx) {
-                        $(this).find('td:first').text(idx + 1);
-                    });
-                }
-                
+                documentList = documentList.filter(doc => doc.index !== index);
+                updateDocumentTable();
                 toastr.success('Document removed from list.');
             });
 
             // Clear Document Form Function
             window.clearDocumentForm = function() {
                 $('#document_name').val('').removeClass('is-invalid');
-                $('input[name="document_type"]').prop('checked', false);
                 $('#document_index').val('');
                 if (myDropzone) {
                     myDropzone.removeAllFiles();
@@ -638,90 +534,71 @@
                 
                 if ($rules.summernote('isEmpty') || text.length === 0) {
                     e.preventDefault();
-                    toastr.warning('Rules is required.');
+                    toastr.warning('Rules are required.');
                     $rules.summernote('focus');
                     return false;
                 }
                 
-                // Prepare documents data
-                e.preventDefault();
-                const form = this;
-                const formData = new FormData(form);
-                
-                // Append existing document IDs
-                existingDocumentIds.forEach(function(id) {
-                    formData.append('existing_document_ids[]', id);
-                });
-                
-                // Append new documents
-                documentList.forEach(function(doc) {
-                    formData.append('document_names[]', doc.name);
-                    formData.append('document_types[]', doc.type);
-                    formData.append('documents[]', doc.file);
-                });
-                
-                // Submit via AJAX
-                $.ajax({
-                    url: $(form).attr('action'),
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        window.location.href = '{{ route("admin.standard-operationals.index") }}';
-                    },
-                    error: function(xhr) {
-                        if (xhr.status === 422) {
-                            const errors = xhr.responseJSON.errors;
-                            let errorMessage = '';
-                            for (let key in errors) {
-                                errorMessage += errors[key][0] + '<br>';
+                // Append documents as FormData
+                if (documentList.length > 0) {
+                    // Remove any existing document inputs
+                    $('input[name="documents[]"]').remove();
+                    $('input[name="document_names[]"]').remove();
+                    
+                    // Create a FormData to handle file uploads
+                    const form = this;
+                    const formData = new FormData(form);
+                    
+                    // Append each document
+                    documentList.forEach(function(doc, idx) {
+                        formData.append('document_names[]', doc.name);
+                        formData.append('documents[]', doc.file);
+                    });
+                    
+                    // Submit via AJAX
+                    e.preventDefault();
+                    
+                    $.ajax({
+                        url: $(form).attr('action'),
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(response) {
+                            window.location.href = '{{ route("admin.policy-letters.index") }}';
+                        },
+                        error: function(xhr) {
+                            if (xhr.status === 422) {
+                                const errors = xhr.responseJSON.errors;
+                                let errorMessage = '';
+                                for (let key in errors) {
+                                    errorMessage += errors[key][0] + '<br>';
+                                }
+                                toastr.error(errorMessage);
+                            } else {
+                                toastr.error('An error occurred while saving.');
                             }
-                            toastr.error(errorMessage);
-                        } else {
-                            toastr.error('An error occurred while updating.');
                         }
-                    }
-                });
-                
-                return false;
+                    });
+                    
+                    return false;
+                }
             });
             
-            // Handle reset button
+            // Handle reset button to clear file input
             $('button[type="reset"]').on('click', function() {
                 setTimeout(function() {
-                    // Clear document list and restore existing documents
+                    // Reset Summernote Editor for rules
+                    $('#rules').summernote('reset');
+                    // Reset Select2 for Company
+                    $('#company').val(null).trigger('change');
+                    // Reset Select2 for Category
+                    $('#category').val(null).prop('disabled', true).trigger('change');
+
+                    // Clear document list
                     documentList = [];
                     documentIndex = 0;
-                    existingDocumentIds = []; 
-                    @foreach($standardOperational->documents as $document)
-                        existingDocumentIds.push('{{ $document->id }}');
-                    @endforeach
-                    
-                    // Restore table to initial state
-                    const tbody = $('#datagrid tbody');
-                    tbody.empty();
-                    @forelse($standardOperational->documents as $index => $document)
-                        tbody.append(`
-                            <tr data-id="{{ $document->id }}" data-existing="true">
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $document->name }}</td>
-                                <td>{{ $document->type }}</td>
-                                <td>
-                                    <a href="{{ Storage::url($document->attachment) }}" target="_blank">
-                                        {{ basename($document->attachment) }}
-                                    </a>
-                                </td>
-                                <td class="text-center">
-                                    <button type="button" class="btn btn-sm btn-danger btn-delete-document" data-id="{{ $document->id }}">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `);
-                    @empty
-                        tbody.append('<tr><td colspan="5" class="text-center">No data available in table</td></tr>');
-                    @endforelse
+                    updateDocumentTable();
 
                     bsCustomFileInput.destroy();
                     bsCustomFileInput.init();

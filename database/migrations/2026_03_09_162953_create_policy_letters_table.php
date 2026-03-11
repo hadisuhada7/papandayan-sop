@@ -11,11 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('documents', function (Blueprint $table) {
+        Schema::create('policy_letters', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('name');
-            $table->string('attachment');
-            $table->foreignUuid('standard_operational_id')->constrained('standard_operationals')->onDelete('cascade');
+            $table->string('title');
+            $table->string('document_number');
+            $table->date('effective_date');
+            $table->date('expired_date');
+            $table->mediumText('rules');
+            $table->foreignUuid('company_id')->constrained('companies')->onDelete('cascade');
             $table->softDeletes();
             $table->timestamps();
         });
@@ -26,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('documents');
+        Schema::dropIfExists('policy_letters');
     }
 };

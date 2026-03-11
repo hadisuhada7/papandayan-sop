@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Papandayan | Standard Operational Detail')
+@section('title', 'Papandayan | Policy Letter Detail')
 
 @section('plugins.Datatables', true)
 @section('plugins.Toastr', true)
@@ -8,12 +8,12 @@
 @section('content_header')
     <div class="row mb-2">
         <div class="col-sm-6">
-            <h1>Standard Operational Detail</h1>
+            <h1>Policy Letter Detail</h1>
         </div>
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.standard-operationals.index') }}">Standard Operationals</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('admin.policy-letters.index') }}">Policy Letters</a></li>
                 <li class="breadcrumb-item active">Detail</li>
             </ol>
         </div>
@@ -25,29 +25,29 @@
         <div class="col-12">
             <div class="card card-primary card-outline">
                 <div class="card-header">
-                    <h3 class="card-title">Standard Operational Information</h3>
+                    <h3 class="card-title">Policy Letter Information</h3>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4">
                             <strong>Title:</strong>
-                            <p>{{ $standardOperational->title }}</p>
+                            <p>{{ $policyLetter->title }}</p>
                         </div>
                         <div class="col-md-4">
                             <strong>Document Number:</strong>
-                            <p>{{ $standardOperational->document_number }}</p>
+                            <p>{{ $policyLetter->document_number }}</p>
                         </div>
                         <div class="col-md-4">
                             <strong>Company:</strong>
-                            <p>{{ $standardOperational->company->name }}</p>
+                            <p>{{ $policyLetter->company->name }}</p>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-4">
                             <strong>Categories:</strong>
                             <p>
-                                @if($standardOperational->categories->count())
-                                    @foreach($standardOperational->categories as $category)
+                                @if($policyLetter->categories->count())
+                                    @foreach($policyLetter->categories as $category)
                                         <span class="badge bg-info">{{ $category->name }}</span>
                                     @endforeach
                                 @else
@@ -56,18 +56,18 @@
                         </div>
                         <div class="col-md-4">
                             <strong>Effective Date:</strong>
-                            <p>{{ $standardOperational->effective_date->format('d F Y') }}</p>
+                            <p>{{ $policyLetter->effective_date->format('d F Y') }}</p>
                         </div>
                         <div class="col-md-4">
                             <strong>Expired Date:</strong>
-                            <p>{{ $standardOperational->expired_date->format('d F Y') }}</p>
+                            <p>{{ $policyLetter->expired_date->format('d F Y') }}</p>
                         </div>
                     </div>
                     <!-- <div class="row">
                         <div class="col-12">
                             <strong>Rules:</strong>
                             <div class="border rounded p-3 bg-light">
-                                {!! ($standardOperational->rules) !!}
+                                {!! ($policyLetter->rules) !!}
                             </div>
                         </div>
                     </div> -->
@@ -87,7 +87,6 @@
                             <tr>
                                 <th style="width: 30px;">No</th>
                                 <th style="width: 300px;">Name</th>
-                                <th style="width: 150px;">Type</th>
                                 <th scope="col">Attachment</th>
                                 <th style="width: 35px;">&nbsp;</th>
                             </tr>
@@ -96,11 +95,10 @@
                             @php
                                 $index = 1;
                             @endphp
-                            @foreach($standardOperational->documents as $document)
+                            @foreach($policyLetter->documents as $document)
                                 <tr>
                                     <td scope="row">{{ $index }}</td>
                                     <td>{{ $document->name }}</td>
-                                    <td>{{ strtoupper($document->type) }}</td>
                                     <td>{{ basename($document->attachment) }}</td>
                                     <td class="text-center">
                                         @if($document->attachment)
@@ -157,7 +155,7 @@
                 },
 
                 columnDefs: [
-                    { targets: 4, orderable: false }
+                    { targets: 3, orderable: false }
                 ],
                 
                 initComplete: function(settings, json) {

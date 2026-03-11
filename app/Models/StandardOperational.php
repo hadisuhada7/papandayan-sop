@@ -45,4 +45,12 @@ class StandardOperational extends Model
     {
         return $this->hasMany(Document::class);
     }
+
+    public function sopDocuments() {
+        return $this->hasMany(Document::class)->where('type', 'sop');
+    }
+
+    public function formDocuments() {
+        return $this->hasMany(Document::class)->where('type', 'form');
+    }
 }

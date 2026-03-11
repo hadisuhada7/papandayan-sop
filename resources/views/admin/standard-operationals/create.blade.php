@@ -136,13 +136,14 @@
                                                     <tr>
                                                         <th style="width: 30px;">No</th>
                                                         <th style="width: 300px;">Name</th>
+                                                        <th style="width: 150px;">Type</th>
                                                         <th scope="col">Attachment</th>
                                                         <th style="width: 35px;">&nbsp;</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <tr>
-                                                        <td colspan="4" class="text-center">No data available in table</td>
+                                                        <td colspan="5" class="text-center">No data available in table</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -177,9 +178,28 @@
                         </div>
                         <div class="modal-body">
                             <form id="document-form" method="" action="" class="form-horizontal">
-                                <div class="form-group">
-                                    <label for="document_name">Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="document_name" name="document_name" maxlength="255" placeholder="Name" required>
+                                <div class="form-group row">
+                                    <label for="document_name" class="col-sm-3 col-form-label">Name <span class="text-danger">*</span></label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" id="document_name" name="document_name" maxlength="255" placeholder="Name" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="document_type" class="col-sm-3 col-form-label">Type <span class="text-danger">*</span></label>
+                                    <div class="col-sm-2">
+                                        <div class="custom-control custom-radio" style="padding-top: 0.5rem;">
+                                            <input class="custom-control-input" type="radio" id="documentTypeSOP" name="document_type" value="sop" {{ old('document_type') == 'sop' ? 'checked' : '' }} required>
+                                            <label for="documentTypeSOP" class="custom-control-label">SOP</label>
+                                        </div>
+                                        <span class="error invalid-feedback">{{ $errors->first('document_type') }}</span>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <div class="custom-control custom-radio" style="padding-top: 0.5rem;">
+                                            <input class="custom-control-input" type="radio" id="documentTypeForm" name="document_type" value="form" {{ old('document_type') == 'form' ? 'checked' : '' }} required>
+                                            <label for="documentTypeForm" class="custom-control-label">Form</label>
+                                        </div>
+                                        <span class="error invalid-feedback">{{ $errors->first('document_type') }}</span>
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="document_attachment">Attachment <span class="text-danger">*</span></label>
@@ -441,12 +461,18 @@
             // Modal Save Button Handler
             $('#btn-modal-save').on('click', function() {
                 const name = $('#document_name').val().trim();
+                const type = $('input[name="document_type"]:checked').val();
                 const files = myDropzone.getAcceptedFiles();
                 
                 // Validate
                 if (!name) {
                     toastr.warning('Please enter document name.');
                     $('#document_name').focus();
+                    return;
+                }
+
+                if (!type) {
+                    toastr.warning('Please select document type.');
                     return;
                 }
                 
@@ -460,6 +486,7 @@
                 documentList.push({
                     index: documentIndex,
                     name: name,
+                    type: type,
                     file: file,
                     fileName: file.name
                 });
@@ -480,13 +507,14 @@
                 tbody.empty();
                 
                 if (documentList.length === 0) {
-                    tbody.append('<tr><td colspan="4" class="text-center">No data available in table</td></tr>');
+                    tbody.append('<tr><td colspan="5" class="text-center">No data available in table</td></tr>');
                 } else {
                     documentList.forEach(function(doc, idx) {
                         const row = `
                             <tr data-index="${doc.index}">
                                 <td>${idx + 1}</td>
                                 <td>${doc.name}</td>
+                                <td>${doc.type.toUpperCase()}</td>
                                 <td>${doc.fileName}</td>
                                 <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-danger btn-delete-document" data-index="${doc.index}">
@@ -511,6 +539,7 @@
             // Clear Document Form Function
             window.clearDocumentForm = function() {
                 $('#document_name').val('').removeClass('is-invalid');
+                $('input[name="document_type"]').prop('checked', false);
                 $('#document_index').val('');
                 if (myDropzone) {
                     myDropzone.removeAllFiles();
@@ -544,6 +573,7 @@
                     // Remove any existing document inputs
                     $('input[name="documents[]"]').remove();
                     $('input[name="document_names[]"]').remove();
+                    $('input[name="document_types[]"]').remove();
                     
                     // Create a FormData to handle file uploads
                     const form = this;
@@ -552,6 +582,7 @@
                     // Append each document
                     documentList.forEach(function(doc, idx) {
                         formData.append('document_names[]', doc.name);
+                        formData.append('document_types[]', doc.type);
                         formData.append('documents[]', doc.file);
                     });
                     

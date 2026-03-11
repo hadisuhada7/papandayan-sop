@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateStandardOperationalRequest extends FormRequest
+class StorePolicyLetterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -30,12 +30,8 @@ class UpdateStandardOperationalRequest extends FormRequest
             'company_id' => ['required', 'string', 'exists:companies,id'],
             'category_ids' => ['required', 'array', 'min:1'],
             'category_ids.*' => ['uuid', 'exists:categories,id'],
-            'existing_document_ids' => ['nullable', 'array'],
-            'existing_document_ids.*' => ['uuid', 'exists:documents,id'],
             'document_names' => ['nullable', 'array'],
             'document_names.*' => ['required_with:documents.*', 'string', 'max:255'],
-            'document_types' => ['nullable', 'array'],
-            'document_types.*' => ['required_with:documents.*', 'string', 'in:sop,form'],
             'documents' => ['nullable', 'array'],
             'documents.*' => ['required_with:document_names.*', 'file', 'mimes:pdf', 'max:5120'],
         ];

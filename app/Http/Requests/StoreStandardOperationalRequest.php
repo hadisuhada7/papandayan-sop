@@ -32,6 +32,8 @@ class StoreStandardOperationalRequest extends FormRequest
             'category_ids.*' => ['uuid', 'exists:categories,id'],
             'document_names' => ['nullable', 'array'],
             'document_names.*' => ['required_with:documents.*', 'string', 'max:255'],
+            'document_types' => ['nullable', 'array'],
+            'document_types.*' => ['required_with:documents.*', 'string', 'in:sop,form'],
             'documents' => ['nullable', 'array'],
             'documents.*' => ['required_with:document_names.*', 'file', 'mimes:pdf', 'max:5120'],
         ];

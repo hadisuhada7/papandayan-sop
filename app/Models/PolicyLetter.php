@@ -7,18 +7,28 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Category extends Model
+class PolicyLetter extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
+
+    protected $table = 'policy_letters';
 
     protected $keyType = 'string';
 
     public $incrementing = false;
 
     protected $fillable = [
-        'name',
-        'description',
+        'title',
+        'document_number',
+        'effective_date',
+        'expired_date',
+        'rules',
         'company_id',
+    ];
+
+    protected $casts = [
+        'effective_date' => 'date', // format method...
+        'expired_date' => 'date', // format method...
     ];
 
     public function company()
@@ -26,18 +36,13 @@ class Category extends Model
         return $this->belongsTo(Company::class, 'company_id');
     }
 
-    public function userDetails()
+    public function categories()
     {
-        return $this->belongsToMany(UserDetail::class, 'category_user_detail');
+        return $this->belongsToMany(Category::class, 'category_policy_letter');
     }
 
-    public function standardOperationals()
+    public function documents()
     {
-        return $this->belongsToMany(StandardOperational::class, 'category_standard_operational');
-    }
-
-    public function policyLetters()
-    {
-        return $this->belongsToMany(PolicyLetter::class, 'category_policy_letter');
+        return $this->hasMany(Document::class);
     }
 }

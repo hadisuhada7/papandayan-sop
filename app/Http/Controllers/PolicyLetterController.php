@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreStandardOperationalRequest;
-use App\Http\Requests\UpdateStandardOperationalRequest;
+use App\Http\Requests\StorePolicyLetterRequest;
+use App\Http\Requests\UpdatePolicyLetterRequest;
 use App\Models\Company;
 use App\Models\Category;
-use App\Models\StandardOperational;
+use App\Models\PolicyLetter;
 use App\Traits\LogsAuditTrail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class StandardOperationalController extends Controller
+class PolicyLetterController extends Controller
 {
+
     use LogsAuditTrail;
 
     /**
@@ -22,19 +23,19 @@ class StandardOperationalController extends Controller
     {
         $user = auth()->user();
         
-        // Super Admin sees all standard operationals
+        // Super Admin sees all policy letters
         if ($user->hasRole('super_admin')) {
-            $standardOperationals = StandardOperational::with(['categories', 'company'])->orderBy('id')->get();
+            $policyLetters = PolicyLetter::with(['categories', 'company'])->orderBy('id')->get();
         } else {
-            // Admin/Viewer only see standard operationals from their company
+            // Admin/Viewer only see policy letters from their company
             $selectedCompanyId = session('selected_company_id');
-            $standardOperationals = StandardOperational::where('company_id', $selectedCompanyId)
+            $policyLetters = PolicyLetter::where('company_id', $selectedCompanyId)
                 ->with(['categories', 'company'])
                 ->orderBy('id')
                 ->get();
         }
         
-        return view('admin.standard-operationals.index', compact('standardOperationals'));
+        return view('admin.policy-letters.index', compact('policyLetters'));
     }
 
     /**
@@ -56,13 +57,13 @@ class StandardOperationalController extends Controller
             $categories = Category::where('company_id', $selectedCompanyId)->get();
         }
         
-        return view('admin.standard-operationals.create', compact('companies', 'categories'));
+        return view('admin.policy-letters.create', compact('companies', 'categories'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreStandardOperationalRequest $request)
+    public function store(StorePolicyLetterRequest $request)
     {
         // Closure-based transaction
         DB::transaction(function () use ($request) {
@@ -72,11 +73,10 @@ class StandardOperationalController extends Controller
 
             // Remove documents data from validated
             $documentNames = $request->input('document_names', []);
-            $documentTypes = $request->input('document_types', []);
             $documentFiles = $request->file('documents', []);
             
-            $standardOperational = StandardOperational::create($validated);
-            $standardOperational->categories()->sync($categoryIds);
+            $policyLetter = PolicyLetter::create($validated);
+            $policyLetter->categories()->sync($categoryIds);
             
             // Handle documents
             if (!empty($documentNames) && !empty($documentFiles)) {
@@ -86,9 +86,8 @@ class StandardOperationalController extends Controller
                         $originalName = $file->getClientOriginalName();
                         $attachmentPath = $file->storeAs('documents', $originalName, 'public');
                         
-                        $standardOperational->documents()->create([
+                        $policyLetter->documents()->create([
                             'name' => $name,
-                            'type' => $documentTypes[$index] ?? null,
                             'attachment' => $attachmentPath,
                         ]);
                     }
@@ -96,16 +95,16 @@ class StandardOperationalController extends Controller
             }
             
             // Log audit trail
-            $this->logAuditTrail('Created Standard Operational', "Created SOP: {$standardOperational->title}");
+            $this->logAuditTrail('Created Policy Letter', "Created Policy Letter: {$policyLetter->title}");
         });
 
-        return redirect()->route('admin.standard-operationals.index')->with('toast', ['type' => 'success', 'message' => 'Standard Operational created successfully.']);
+        return redirect()->route('admin.policy-letters.index')->with('toast', ['type' => 'success', 'message' => 'Policy Letter created successfully.']);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(StandardOperational $standardOperational)
+    public function show(PolicyLetter $policyLetter)
     {
         $user = auth()->user();
         
@@ -113,22 +112,22 @@ class StandardOperationalController extends Controller
         if (!$user->hasRole('super_admin')) {
             $selectedCompanyId = session('selected_company_id');
             
-            // Verify standard operational belongs to their company
-            if ($standardOperational->company_id !== $selectedCompanyId) {
-                abort(403, 'Unauthorized access to this standard operational.');
+            // Verify policy letter belongs to their company
+            if ($policyLetter->company_id !== $selectedCompanyId) {
+                abort(403, 'Unauthorized access to this policy letter.');
             }
         }
         
         // Load relationships
-        $standardOperational->load(['company', 'categories', 'documents']);
+        $policyLetter->load(['company', 'categories', 'documents']);
         
-        return view('admin.standard-operationals.detail', compact('standardOperational'));
+        return view('admin.policy-letters.detail', compact('policyLetter'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(StandardOperational $standardOperational)
+    public function edit(PolicyLetter $policyLetter)
     {
         $user = auth()->user();
         
@@ -140,9 +139,9 @@ class StandardOperationalController extends Controller
             // Admin/Viewer only see their company and categories
             $selectedCompanyId = session('selected_company_id');
             
-            // Verify standard operational belongs to their company
-            if ($standardOperational->company_id !== $selectedCompanyId) {
-                abort(403, 'Unauthorized access to this standard operational.');
+            // Verify policy letter belongs to their company
+            if ($policyLetter->company_id !== $selectedCompanyId) {
+                abort(403, 'Unauthorized access to this policy letter.');
             }
             
             $company = Company::find($selectedCompanyId);
@@ -150,36 +149,35 @@ class StandardOperationalController extends Controller
             $categories = Category::where('company_id', $selectedCompanyId)->get();
         }
         
-        $standardOperational->load('categories');
-        return view('admin.standard-operationals.edit', compact('standardOperational', 'companies', 'categories'));
+        $policyLetter->load('categories');
+        return view('admin.policy-letters.edit', compact('policyLetter', 'companies', 'categories'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateStandardOperationalRequest $request, StandardOperational $standardOperational)
+    public function update(UpdatePolicyLetterRequest $request, PolicyLetter $policyLetter)
     {
         // Closure-based transaction
-        DB::transaction(function () use ($request, $standardOperational) {
+        DB::transaction(function () use ($request, $policyLetter) {
             $validated = $request->validated();
             $categoryIds = $validated['category_ids'] ?? [];
             unset($validated['category_ids']);
 
             // Remove documents data from validated
             $documentNames = $request->input('document_names', []);
-            $documentTypes = $request->input('document_types', []);
             $documentFiles = $request->file('documents', []);
             $existingDocumentIds = $request->input('existing_document_ids', []);
             
-            $standardOperational->update($validated);
-            $standardOperational->categories()->sync($categoryIds);
+            $policyLetter->update($validated);
+            $policyLetter->categories()->sync($categoryIds);
             
             // Handle documents - delete documents not in the list
             if (!empty($existingDocumentIds)) {
-                $standardOperational->documents()->whereNotIn('id', $existingDocumentIds)->delete();
+                $policyLetter->documents()->whereNotIn('id', $existingDocumentIds)->delete();
             } else {
                 // Delete all documents if none are submitted
-                $standardOperational->documents()->delete();
+                $policyLetter->documents()->delete();
             }
             
             // Add new documents
@@ -190,9 +188,8 @@ class StandardOperationalController extends Controller
                         $originalName = $file->getClientOriginalName();
                         $attachmentPath = $file->storeAs('documents', $originalName, 'public');
                         
-                        $standardOperational->documents()->create([
+                        $policyLetter->documents()->create([
                             'name' => $name,
-                            'type' => $documentTypes[$index] ?? null,
                             'attachment' => $attachmentPath,
                         ]);
                     }
@@ -200,27 +197,27 @@ class StandardOperationalController extends Controller
             }
             
             // Log audit trail
-            $this->logAuditTrail('Updated Standard Operational', "Updated SOP: {$standardOperational->title}");
+            $this->logAuditTrail('Updated Policy Letter', "Updated Policy Letter: {$policyLetter->title}");
         });
 
-        return redirect()->route('admin.standard-operationals.index')->with('toast', ['type' => 'success', 'message' => 'Standard Operational updated successfully.']);
+        return redirect()->route('admin.policy-letters.index')->with('toast', ['type' => 'success', 'message' => 'Policy Letter updated successfully.']);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(StandardOperational $standardOperational)
+    public function destroy(PolicyLetter $policyLetter)
     {
-        $standardOperationalTitle = $standardOperational->title;
+        $policyLetterTitle = $policyLetter->title;
         
         // Closure-based transaction
-        DB::transaction(function () use ($standardOperational, $standardOperationalTitle) {
-            $standardOperational->delete();
+        DB::transaction(function () use ($policyLetter, $policyLetterTitle) {
+            $policyLetter->delete();
             
             // Log audit trail
-            $this->logAuditTrail('Deleted Standard Operational', "Deleted SOP: {$standardOperationalTitle}");
+            $this->logAuditTrail('Deleted Policy Letter', "Deleted Policy Letter: {$policyLetterTitle}");
         });
 
-        return redirect()->route('admin.standard-operationals.index')->with('toast', ['type' => 'success', 'message' => 'Standard Operational deleted successfully.']);
+        return redirect()->route('admin.policy-letters.index')->with('toast', ['type' => 'success', 'message' => 'Policy Letter deleted successfully.']);
     }
 }

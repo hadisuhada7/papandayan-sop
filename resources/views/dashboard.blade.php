@@ -33,7 +33,9 @@
 
 @section('content')
     <div class="row" id="category-row">
-        @foreach($categories as $category)
+
+        <!-- Standard Operational Procedures -->
+        @foreach($categories->where('standard_operationals_count', '>', 0) as $category)
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-info">
                     <div class="inner">
@@ -46,16 +48,37 @@
                     <div class="icon">
                         <i class="fas fa-file-alt"></i>
                     </div>
-                    <a href="javascript:void(0);" class="small-box-footer" data-category-id="{{ $category->id }}" onclick="showAccordion('{{ $category->id }}'); return false;">Read More <i class="fas fa-arrow-circle-right"></i></a>
+                    <a href="javascript:void(0);" class="small-box-footer" data-category-id="{{ $category->id }}" onclick="showAccordionStandardOperational('{{ $category->id }}'); return false;">Read More <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+        @endforeach
+
+        <!-- Policy Letters -->
+        @foreach($categories->where('policy_letters_count', '>', 0) as $category)
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h5 style="font-weight: bold; margin-top: 10px; margin-bottom: 10px;">{{ $category->name }}</h5>
+                        @if(auth()->user()->hasRole('super_admin') && $category->company)
+                            <p style="font-size: 12px; margin-bottom: 5px;">{{ $category->company->name }}</p>
+                        @endif
+                        <p style="font-size: 16px; margin-bottom: 25px;">{{ $category->policy_letters_count }}</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <a href="javascript:void(0);" class="small-box-footer" data-category-id="{{ $category->id }}" onclick="showAccordionPolicyLetter('{{ $category->id }}'); return false;">Read More <i class="fas fa-arrow-circle-right"></i></a>
                 </div>
             </div>
         @endforeach
     </div>
+
+    <!-- Standard Operational Procedures -->
     <div class="row" id="standard-operational-row" style="display:none;">
         <div class="col-md-12">
             <div class="card card-primary card-outline">
                 <div class="card-header">
-                    <h3 class="card-title">Standard Operationals</h3>
+                    <h3 class="card-title">Standard Operational Procedures</h3>
 
                     <div class="card-tools">
                         <div class="input-group input-group-sm">
@@ -64,9 +87,9 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div id="accordion">
+                    <div id="accordion-standard">
                         @foreach($categories as $category)
-                            <div class="accordion-category" id="accordion-category-{{ $category->id }}" style="display:none;">
+                            <div class="accordion-category" id="accordion-standard-category-{{ $category->id }}" style="display:none;">
                                 <h5>{{ $category->name }}</h5>
                                 <div class="row">
                                     <div class="col-12">
@@ -92,7 +115,7 @@
                                                 </a>
                                             </h4>
                                         </div>
-                                        <div id="collapseStandardOperational{{ $standardOperational->id }}" class="collapse" data-parent="#accordion-category-{{ $category->id }}">
+                                        <div id="collapseStandardOperational{{ $standardOperational->id }}" class="collapse" data-parent="#accordion-standard-category-{{ $category->id }}">
                                             <div class="card-body">
                                                 <div class="standardDetailHeading no-copy">
                                                     <ul class="standardMeta">
@@ -135,8 +158,111 @@
                                                     </ul>
                                                     <div class="standardInfoGrid">
                                                         <div class="standardInfoBlock">
-                                                            <h6>Standard Operational Procedures</h6>
+                                                            <h6>Standard Operational Procedure</h6>
                                                             <div class="standardRichText">{!! $standardOperational->rules !!}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @empty
+                                @endforelse
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Policy Letters -->
+    <div class="row" id="policy-letter-row" style="display:none;">
+        <div class="col-md-12">
+            <div class="card card-primary card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">Policy Letters</h3>
+
+                    <div class="card-tools">
+                        <div class="input-group input-group-sm">
+                            <button type="button" class="btn btn-sm btn-default" onclick="showSmallBoxes()"><i class="fas fa-arrow-circle-left"></i> Back</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="accordion-policy">
+                        @foreach($categories as $category)
+                            <div class="accordion-category" id="accordion-policy-category-{{ $category->id }}" style="display:none;">
+                                <h5>{{ $category->name }}</h5>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="input-group mb-3">
+                                            <input type="text" class="form-control" id="searchPolicyLetter{{ $category->id }}" placeholder="Search" onkeyup="filterPolicyLetter('{{ $category->id }}')">
+                                            <span class="input-group-append">
+                                                <button type="button" class="btn btn-primary" onclick="filterPolicyLetter('{{ $category->id }}')">Search</button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                @forelse($category->policyLetters as $policyLetter)
+                                    <div class="card card-info mb-2">
+                                        <div class="card-header">
+                                            <h4 class="card-title w-100">
+                                                <a class="d-block w-100" data-toggle="collapse" href="#collapsePolicyLetter{{ $policyLetter->id }}">
+                                                    {{ $policyLetter->title }}
+
+                                                    <div class="float-right" style="font-size: 16px; font-weight: normal;">
+                                                       {{ $policyLetter->document_number }}
+                                                       ({{ optional($policyLetter->effective_date)->format('d M Y') ?? '-' }})
+                                                    </div>
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="collapsePolicyLetter{{ $policyLetter->id }}" class="collapse" data-parent="#accordion-policy-category-{{ $category->id }}">
+                                            <div class="card-body">
+                                                <div class="standardDetailHeading no-copy">
+                                                    <ul class="standardMeta">
+                                                        <li>
+                                                            <div class="standardMetaLabelRow">
+                                                                <i class="fa fa-file-alt"></i>
+                                                                <span>Document Number</span>
+                                                            </div>
+                                                            <strong>{{ $policyLetter->document_number }}</strong>
+                                                        </li>
+                                                        <li>
+                                                            <div class="standardMetaLabelRow">
+                                                                <i class="fa fa-calendar-check"></i>
+                                                                <span>Effective Date</span>
+                                                            </div>
+                                                            <strong>{{ optional($policyLetter->effective_date)->format('d F Y') ?? '-' }}</strong>
+                                                        </li>
+                                                        <li>
+                                                            <div class="standardMetaLabelRow">
+                                                                <i class="fa fa-calendar-times"></i>
+                                                                <span>Expired Date</span>
+                                                            </div>
+                                                            <strong>{{ optional($policyLetter->expired_date)->format('d F Y') ?? '-' }}</strong>
+                                                        </li>
+                                                        <li>
+                                                            <div class="standardMetaLabelRow">
+                                                                <i class="fa fa-folder-open"></i>
+                                                                <span>Category</span>
+                                                            </div>
+                                                            <strong>
+                                                                @if($policyLetter->categories->count())
+                                                                    @foreach($policyLetter->categories as $cat)
+                                                                        <span class="standardCategoryBadge">{{ $cat->name }}</span>
+                                                                    @endforeach
+                                                                @else
+                                                                    <span class="text-muted">Uncategorized</span>
+                                                                @endif
+                                                            </strong>
+                                                        </li>
+                                                    </ul>
+                                                    <div class="standardInfoGrid">
+                                                        <div class="standardInfoBlock">
+                                                            <h6>Policy Letter</h6>
+                                                            <div class="standardRichText">{!! $policyLetter->rules !!}</div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -272,7 +398,7 @@
 @section('adminlte_js')
     @include('partials.toastr')
     <script type="text/javascript">
-        function showAccordion(categoryId) {
+        function showAccordionStandardOperational(categoryId) {
             // Hide Category row
             document.getElementById('category-row').style.display = 'none';
             
@@ -285,11 +411,31 @@
             });
 
             // Show selected Category
-            var el = document.getElementById('accordion-category-' + categoryId);
+            var el = document.getElementById('accordion-standard-category-' + categoryId);
             if (el) el.style.display = 'block';
 
             // Optionally scroll to Standard Operational row
             document.getElementById('standard-operational-row').scrollIntoView({behavior: 'smooth'});
+        }
+
+        function showAccordionPolicyLetter(categoryId) {
+            // Hide Category row
+            document.getElementById('category-row').style.display = 'none';
+            
+            // Show Policy Letter row
+            document.getElementById('policy-letter-row').style.display = '';
+            
+            // Hide all Accordion Categories
+            document.querySelectorAll('.accordion-category').forEach(function(el) {
+                el.style.display = 'none';
+            });
+
+            // Show selected Category
+            var el = document.getElementById('accordion-policy-category-' + categoryId);
+            if (el) el.style.display = 'block';
+
+            // Optionally scroll to Policy Letter row
+            document.getElementById('policy-letter-row').scrollIntoView({behavior: 'smooth'});
         }
         
         function showSmallBoxes() {
@@ -299,6 +445,9 @@
             // Hide Standard Operational row
             document.getElementById('standard-operational-row').style.display = 'none';
             
+            // Hide Policy Letter row
+            document.getElementById('policy-letter-row').style.display = 'none';
+            
             // Scroll to top
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
@@ -306,7 +455,21 @@
         function filterStandardOperational(categoryId) {
             var input = document.getElementById('searchStandardOperational' + categoryId);
             var filter = input.value.toLowerCase();
-            var cards = document.querySelectorAll('#accordion-category-' + categoryId + ' .card');
+            var cards = document.querySelectorAll('#accordion-standard-category-' + categoryId + ' .card');
+            cards.forEach(function(card) {
+                var title = card.querySelector('.card-title a');
+                if (title && title.textContent.toLowerCase().indexOf(filter) > -1) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function filterPolicyLetter(categoryId) {
+            var input = document.getElementById('searchPolicyLetter' + categoryId);
+            var filter = input.value.toLowerCase();
+            var cards = document.querySelectorAll('#accordion-policy-category-' + categoryId + ' .card');
             cards.forEach(function(card) {
                 var title = card.querySelector('.card-title a');
                 if (title && title.textContent.toLowerCase().indexOf(filter) > -1) {

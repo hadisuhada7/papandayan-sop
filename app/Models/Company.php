@@ -31,6 +31,11 @@ class Company extends Model
         return $this->hasMany(StandardOperational::class);
     }
 
+    public function policyLetters()
+    {
+        return $this->hasMany(PolicyLetter::class);
+    }
+
     public function userDetails()
     {
         return $this->hasMany(UserDetail::class);

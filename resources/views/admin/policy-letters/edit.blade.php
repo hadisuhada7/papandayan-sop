@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Papandayan | Edit Standard Operational')
+@section('title', 'Papandayan | Edit Policy Letter')
 
 @section('plugins.TempusDominusBs4', true)
 @section('plugins.Summernote', true)
@@ -11,12 +11,12 @@
 @section('content_header')
     <div class="row mb-2">
         <div class="col-sm-6">
-            <h1>Edit Standard Operational</h1>
+            <h1>Edit Policy Letter</h1>
         </div>
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.standard-operationals.index') }}">Standard Operationals</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('admin.policy-letters.index') }}">Policy Letters</a></li>
                 <li class="breadcrumb-item active">Edit</li>
             </ol>
         </div>
@@ -28,9 +28,9 @@
         <div class="col-12">
             <div class="card card-primary card-outline">
                 <div class="card-header">
-                    <h3 class="card-title">Form Standard Operational</h3>
+                    <h3 class="card-title">Form Policy Letter</h3>
                 </div>
-                <form method="POST" action="{{ route('admin.standard-operationals.update', $standardOperational) }}" enctype="multipart/form-data" class="form-horizontal">
+                <form method="POST" action="{{ route('admin.policy-letters.update', $policyLetter) }}" enctype="multipart/form-data" class="form-horizontal">
                     @csrf
                     @method('PUT')
                     <div class="card-body">
@@ -55,7 +55,7 @@
                                         <select class="form-control select2bs4" style="width: 100%;" id="company" name="company_id" required>
                                             <option value="">-- Select Company --</option>
                                             @foreach ($companies as $company)
-                                                <option value="{{ $company->id }}" {{ $company->id == $standardOperational->company_id ? 'selected' : '' }}>{{ $company->name }}</option>
+                                                <option value="{{ $company->id }}" {{ $company->id == $policyLetter->company_id ? 'selected' : '' }}>{{ $company->name }}</option>
                                             @endforeach
                                         </select>
                                         <span class="error invalid-feedback">{{ $errors->first('company_id') }}</span>
@@ -65,7 +65,7 @@
                                     <label for="Category" class="col-sm-2 col-form-label">Category <span class="text-danger">*</span></label>
                                     <div class="col-sm-4">
                                         @php
-                                            $selectedCategoryIds = (array) old('category_ids', $standardOperational->categories->pluck('id')->toArray());
+                                            $selectedCategoryIds = (array) old('category_ids', $policyLetter->categories->pluck('id')->toArray());
                                         @endphp
                                         <select class="form-control select2-tags" style="width: 100%;" id="category" name="category_ids[]" multiple="multiple" data-placeholder="" required>
                                             @foreach ($categories as $category)
@@ -82,14 +82,14 @@
                                 <div class="form-group row">
                                     <label for="title" class="col-sm-2 col-form-label">Title <span class="text-danger">*</span></label>
                                     <div class="col-sm-6">
-                                        <input type="text" class="form-control" id="title" name="title" value="{{ $standardOperational->title }}" maxlength="255" placeholder="Title" required>
+                                        <input type="text" class="form-control" id="title" name="title" value="{{ $policyLetter->title }}" maxlength="255" placeholder="Title" required>
                                         <span class="error invalid-feedback">{{ $errors->first('title') }}</span>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label for="documentNumber" class="col-sm-2 col-form-label">Document Number <span class="text-danger">*</span></label>
                                     <div class="col-sm-6">
-                                        <input type="text" class="form-control" id="documentNumber" name="document_number" value="{{ $standardOperational->document_number }}" maxlength="100" placeholder="Document Number" required>
+                                        <input type="text" class="form-control" id="documentNumber" name="document_number" value="{{ $policyLetter->document_number }}" maxlength="100" placeholder="Document Number" required>
                                         <span class="error invalid-feedback">{{ $errors->first('document_number') }}</span>
                                     </div>
                                 </div>
@@ -97,7 +97,7 @@
                                     <label for="effectiveDate" class="col-sm-2 col-form-label">Effective Date <span class="text-danger">*</span></label>
                                     <div class="col-sm-4">
                                         <div class="input-group date" id="effectiveDate" data-target-input="nearest">
-                                            <input type="text" class="form-control datetimepicker-input" name="effective_date" value="{{ $standardOperational->effective_date ? $standardOperational->effective_date->format('d-m-Y') : '' }}" data-target="#effectiveDate" placeholder="dd-MM-yyyy" required/>
+                                            <input type="text" class="form-control datetimepicker-input" name="effective_date" value="{{ $policyLetter->effective_date ? $policyLetter->effective_date->format('d-m-Y') : '' }}" data-target="#effectiveDate" placeholder="dd-MM-yyyy" required/>
                                             <div class="input-group-append" data-target="#effectiveDate" data-toggle="datetimepicker">
                                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                                             </div>
@@ -109,7 +109,7 @@
                                     <label for="expiredDate" class="col-sm-2 col-form-label">Expired Date <span class="text-danger">*</span></label>
                                     <div class="col-sm-4">
                                         <div class="input-group date" id="expiredDate" data-target-input="nearest">
-                                            <input type="text" class="form-control datetimepicker-input" name="expired_date" value="{{ $standardOperational->expired_date ? $standardOperational->expired_date->format('d-m-Y') : '' }}" data-target="#expiredDate" placeholder="dd-MM-yyyy" required/>
+                                            <input type="text" class="form-control datetimepicker-input" name="expired_date" value="{{ $policyLetter->expired_date ? $policyLetter->expired_date->format('d-m-Y') : '' }}" data-target="#expiredDate" placeholder="dd-MM-yyyy" required/>
                                             <div class="input-group-append" data-target="#expiredDate" data-toggle="datetimepicker">
                                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                                             </div>
@@ -120,7 +120,7 @@
                                 <div class="form-group row">
                                     <label for="rules" class="col-sm-2 col-form-label">Rules <span class="text-danger">*</span></label>
                                     <div class="col-sm-10">
-                                        <textarea class="form-control" id="rules" name="rules" maxlength="65535" placeholder="Rules">{{ $standardOperational->rules }}</textarea>
+                                        <textarea class="form-control" id="rules" name="rules" maxlength="65535" placeholder="Rules">{{ $policyLetter->rules }}</textarea>
                                         <span class="error invalid-feedback">{{ $errors->first('rules') }}</span>
                                     </div>
                                 </div>
@@ -137,17 +137,15 @@
                                                     <tr>
                                                         <th style="width: 30px;">No</th>
                                                         <th style="width: 300px;">Name</th>
-                                                        <th style="width: 150px;">Type</th>
                                                         <th scope="col">Attachment</th>
                                                         <th style="width: 35px;">&nbsp;</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    @forelse($standardOperational->documents as $index => $document)
+                                                    @forelse($policyLetter->documents as $index => $document)
                                                         <tr data-id="{{ $document->id }}" data-existing="true">
                                                             <td>{{ $index + 1 }}</td>
                                                             <td>{{ $document->name }}</td>
-                                                            <td>{{ strtoupper($document->type) }}</td>
                                                             <td>
                                                                 <a href="{{ Storage::url($document->attachment) }}" target="_blank">
                                                                     {{ basename($document->attachment) }}
@@ -161,7 +159,7 @@
                                                         </tr>
                                                     @empty
                                                         <tr>
-                                                            <td colspan="5" class="text-center">No data available in table</td>
+                                                            <td colspan="4" class="text-center">No data available in table</td>
                                                         </tr>
                                                     @endforelse
                                                 </tbody>
@@ -178,7 +176,7 @@
                         </div>
                     </div>
                     <div class="card-footer text-right">
-                        <a href="{{ route('admin.standard-operationals.index') }}" class="btn btn-default" style="margin-right: 5px">Back</a>
+                        <a href="{{ route('admin.policy-letters.index') }}" class="btn btn-default" style="margin-right: 5px">Back</a>
                         <button type="reset" class="btn btn-secondary" style="margin-right: 5px">Reset</button>
                         <button type="submit" class="btn btn-primary">Update</button>
                     </div>
@@ -197,28 +195,9 @@
                         </div>
                         <div class="modal-body">
                             <form id="document-form" method="" action="" class="form-horizontal">
-                                <div class="form-group row">
-                                    <label for="document_name" class="col-sm-3 col-form-label">Name <span class="text-danger">*</span></label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control" id="document_name" name="document_name" maxlength="255" placeholder="Name" required>
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label for="document_type" class="col-sm-3 col-form-label">Type <span class="text-danger">*</span></label>
-                                    <div class="col-sm-2">
-                                        <div class="custom-control custom-radio" style="padding-top: 0.5rem;">
-                                            <input class="custom-control-input" type="radio" id="documentTypeSOP" name="document_type" value="sop" {{ old('document_type', $standardOperational->document_type) == 'sop' ? 'checked' : '' }} required>
-                                            <label for="documentTypeSOP" class="custom-control-label">SOP</label>
-                                        </div>
-                                        <span class="error invalid-feedback">{{ $errors->first('document_type') }}</span>
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <div class="custom-control custom-radio" style="padding-top: 0.5rem;">
-                                            <input class="custom-control-input" type="radio" id="documentTypeForm" name="document_type" value="form" {{ old('document_type', $standardOperational->document_type) == 'form' ? 'checked' : '' }} required>
-                                            <label for="documentTypeForm" class="custom-control-label">Form</label>
-                                        </div>
-                                        <span class="error invalid-feedback">{{ $errors->first('document_type') }}</span>
-                                    </div>
+                                <div class="form-group">
+                                    <label for="document_name">Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="document_name" name="document_name" maxlength="255" placeholder="Name" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="document_attachment">Attachment <span class="text-danger">*</span></label>
@@ -379,7 +358,7 @@
         
         $(document).ready(function () {
             // Initialize existing documents
-            @foreach($standardOperational->documents as $document)
+            @foreach($policyLetter->documents as $document)
                 existingDocumentIds.push('{{ $document->id }}');
             @endforeach
             
@@ -451,8 +430,8 @@
             });
 
             // Store initial selected categories
-            const initialCategories = {!! json_encode($standardOperational->categories->pluck('id')->toArray()) !!};
-            const initialCompanyId = '{{ $standardOperational->company_id }}';
+            const initialCategories = {!! json_encode($policyLetter->categories->pluck('id')->toArray()) !!};
+            const initialCompanyId = '{{ $policyLetter->company_id }}';
 
             // Handle company change
             $('#company').on('change', function() {
@@ -495,21 +474,15 @@
                 $('#company').trigger('change');
             }
 
-            // Modal Save Button Handler
+            // Handle Save Document Button
             $('#btn-modal-save').on('click', function() {
                 const name = $('#document_name').val().trim();
-                const type = $('input[name="document_type"]:checked').val();
                 const files = myDropzone.getAcceptedFiles();
                 
                 // Validate
                 if (!name) {
                     toastr.warning('Please enter document name.');
                     $('#document_name').focus();
-                    return;
-                }
-
-                if (!type) {
-                    toastr.warning('Please select document type.');
                     return;
                 }
                 
@@ -523,7 +496,6 @@
                 documentList.push({
                     index: documentIndex,
                     name: name,
-                    type: type,
                     file: file,
                     fileName: file.name
                 });
@@ -548,10 +520,10 @@
                 tbody.find('tr[data-existing!="true"]').remove();
                 
                 if (documentList.length === 0 && existingCount === 0) {
-                    tbody.empty().append('<tr><td colspan="5" class="text-center">No data available in table</td></tr>');
+                    tbody.empty().append('<tr><td colspan="4" class="text-center">No data available in table</td></tr>');
                 } else {
                     // Remove "no data" row if exists
-                    tbody.find('td[colspan="5"]').closest('tr').remove();
+                    tbody.find('td[colspan="4"]').closest('tr').remove();
                     
                     // Add new documents
                     documentList.forEach(function(doc, idx) {
@@ -560,7 +532,6 @@
                             <tr data-index="${doc.index}">
                                 <td>${rowNumber}</td>
                                 <td>${doc.name}</td>
-                                <td>${doc.type.toUpperCase()}</td>
                                 <td>${doc.fileName}</td>
                                 <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-danger btn-delete-document" data-index="${doc.index}">
@@ -614,7 +585,6 @@
             // Clear Document Form Function
             window.clearDocumentForm = function() {
                 $('#document_name').val('').removeClass('is-invalid');
-                $('input[name="document_type"]').prop('checked', false);
                 $('#document_index').val('');
                 if (myDropzone) {
                     myDropzone.removeAllFiles();
@@ -656,7 +626,6 @@
                 // Append new documents
                 documentList.forEach(function(doc) {
                     formData.append('document_names[]', doc.name);
-                    formData.append('document_types[]', doc.type);
                     formData.append('documents[]', doc.file);
                 });
                 
@@ -668,7 +637,7 @@
                     processData: false,
                     contentType: false,
                     success: function(response) {
-                        window.location.href = '{{ route("admin.standard-operationals.index") }}';
+                        window.location.href = '{{ route("admin.policy-letters.index") }}';
                     },
                     error: function(xhr) {
                         if (xhr.status === 422) {
@@ -694,19 +663,18 @@
                     documentList = [];
                     documentIndex = 0;
                     existingDocumentIds = []; 
-                    @foreach($standardOperational->documents as $document)
+                    @foreach($policyLetter->documents as $document)
                         existingDocumentIds.push('{{ $document->id }}');
                     @endforeach
                     
                     // Restore table to initial state
                     const tbody = $('#datagrid tbody');
                     tbody.empty();
-                    @forelse($standardOperational->documents as $index => $document)
+                    @forelse($policyLetter->documents as $index => $document)
                         tbody.append(`
                             <tr data-id="{{ $document->id }}" data-existing="true">
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $document->name }}</td>
-                                <td>{{ $document->type }}</td>
                                 <td>
                                     <a href="{{ Storage::url($document->attachment) }}" target="_blank">
                                         {{ basename($document->attachment) }}
@@ -720,7 +688,7 @@
                             </tr>
                         `);
                     @empty
-                        tbody.append('<tr><td colspan="5" class="text-center">No data available in table</td></tr>');
+                        tbody.append('<tr><td colspan="4" class="text-center">No data available in table</td></tr>');
                     @endforelse
 
                     bsCustomFileInput.destroy();
