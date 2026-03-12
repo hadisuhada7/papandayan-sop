@@ -45,6 +45,24 @@
         @if(session('info'))
             toastr.info('{{ session('info') }}');
         @endif
+
+        // Handle toast messages stored in sessionStorage (for redirects after AJAX actions)
+        const storedToast = sessionStorage.getItem('toast');
+        if (storedToast) {
+            try {
+                const toast = JSON.parse(storedToast);
+                const type = toast.type || 'info';
+                const message = toast.message || '';
+
+                if (message && typeof toastr[type] === 'function') {
+                    toastr[type](message);
+                }
+            } catch (error) {
+                // Ignore invalid storage payload
+            }
+
+            sessionStorage.removeItem('toast');
+        }
     });
 
     // Global toast utility functions

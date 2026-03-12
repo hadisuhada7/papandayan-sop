@@ -30,7 +30,7 @@
                 <div class="card-header">
                     <h3 class="card-title">Form Standard Operational</h3>
                 </div>
-                <form method="POST" action="{{ route('admin.standard-operationals.store') }}" enctype="multipart/form-data" class="form-horizontal">
+                <form id="standard-operational-form" method="POST" action="{{ route('admin.standard-operationals.store', [], false) }}" enctype="multipart/form-data" class="form-horizontal">
                     @csrf
                     <div class="card-body">
 
@@ -377,7 +377,49 @@
 
             // Initialize Summernote Editor
             const $rules = $('#rules');
-            $rules.summernote();
+            $rules.summernote({
+                height: 200,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['fontname', ['fontname']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ],
+                callbacks: {
+                    onImageUpload: function(files) {
+                        // Upload image to server
+                        uploadSummernoteImage(files[0], $rules);
+                    }
+                }
+            });
+
+            // Function to upload Summernote image
+            function uploadSummernoteImage(file, editor) {
+                const data = new FormData();
+                data.append('image', file);
+                data.append('_token', '{{ csrf_token() }}');
+
+                $.ajax({
+                    url: '{{ route("admin.upload-summernote-image") }}',
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    data: data,
+                    type: 'POST',
+                    success: function(response) {
+                        if (response.url) {
+                            editor.summernote('insertImage', response.url);
+                        }
+                    },
+                    error: function(xhr) {
+                        toastr.error('Failed to upload image. Please try again.');
+                    }
+                });
+            }
 
             // Initialize Dropzone
             myDropzone = new Dropzone("#documentDropzone", {
@@ -557,63 +599,52 @@
             };
 
             // Enforce rules presence without relying on a hidden required control
-            $('form.form-horizontal').on('submit', function (e) {
+            $('#standard-operational-form').on('submit', function (e) {
+                e.preventDefault();
+
                 const content = $rules.summernote('code');
                 const text = $('<div>').html(content).text().trim();
+                const form = this;
                 
                 if ($rules.summernote('isEmpty') || text.length === 0) {
-                    e.preventDefault();
                     toastr.warning('Rules are required.');
                     $rules.summernote('focus');
                     return false;
                 }
-                
-                // Append documents as FormData
+
+                // Remove previously generated dynamic inputs before rebuilding.
+                $(form).find('.js-generated-document-input').remove();
+
                 if (documentList.length > 0) {
-                    // Remove any existing document inputs
-                    $('input[name="documents[]"]').remove();
-                    $('input[name="document_names[]"]').remove();
-                    $('input[name="document_types[]"]').remove();
-                    
-                    // Create a FormData to handle file uploads
-                    const form = this;
-                    const formData = new FormData(form);
-                    
-                    // Append each document
-                    documentList.forEach(function(doc, idx) {
-                        formData.append('document_names[]', doc.name);
-                        formData.append('document_types[]', doc.type);
-                        formData.append('documents[]', doc.file);
-                    });
-                    
-                    // Submit via AJAX
-                    e.preventDefault();
-                    
-                    $.ajax({
-                        url: $(form).attr('action'),
-                        type: 'POST',
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        success: function(response) {
-                            window.location.href = '{{ route("admin.standard-operationals.index") }}';
-                        },
-                        error: function(xhr) {
-                            if (xhr.status === 422) {
-                                const errors = xhr.responseJSON.errors;
-                                let errorMessage = '';
-                                for (let key in errors) {
-                                    errorMessage += errors[key][0] + '<br>';
-                                }
-                                toastr.error(errorMessage);
-                            } else {
-                                toastr.error('An error occurred while saving.');
-                            }
-                        }
-                    });
-                    
-                    return false;
+                    for (const doc of documentList) {
+                        const nameInput = document.createElement('input');
+                        nameInput.type = 'hidden';
+                        nameInput.name = 'document_names[]';
+                        nameInput.value = doc.name;
+                        nameInput.className = 'js-generated-document-input';
+                        form.appendChild(nameInput);
+
+                        const typeInput = document.createElement('input');
+                        typeInput.type = 'hidden';
+                        typeInput.name = 'document_types[]';
+                        typeInput.value = doc.type;
+                        typeInput.className = 'js-generated-document-input';
+                        form.appendChild(typeInput);
+
+                        const fileInput = document.createElement('input');
+                        fileInput.type = 'file';
+                        fileInput.name = 'documents[]';
+                        fileInput.className = 'js-generated-document-input d-none';
+
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(doc.file);
+                        fileInput.files = dataTransfer.files;
+                        form.appendChild(fileInput);
+                    }
                 }
+
+                HTMLFormElement.prototype.submit.call(form);
+                return true;
             });
             
             // Handle reset button to clear file input

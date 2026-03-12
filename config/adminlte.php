@@ -333,6 +333,12 @@ return [
             'role' => ['admin', 'super_admin'],
         ],
         [
+            'text' => 'Policy Letters',
+            'url' => 'admin/policy-letters',
+            'icon' => 'fas fa-fw fa-file-alt',
+            'role' => ['admin', 'super_admin'],
+        ],
+        [
             'header' => 'SETTINGS',
             'role' => ['admin', 'super_admin'],
         ],
@@ -402,6 +408,26 @@ return [
     */
 
     'plugins' => [
+        // 'jQuery' => [
+        //     'active' => true,
+        //     'files' => [
+        //         [
+        //             'type' => 'js',
+        //             'asset' => true,
+        //             'location' => 'vendor/jquery/jquery.min.js',
+        //         ],
+        //     ],
+        // ],
+        // 'Bootstrap' => [
+        //     'active' => true,
+        //     'files' => [
+        //         [
+        //             'type' => 'js',
+        //             'asset' => true,
+        //             'location' => 'vendor/bootstrap/js/bootstrap.bundle.min.js',
+        //         ],
+        //     ],
+        // ],
         'Datatables' => [
             'active' => false,
             'files' => [
@@ -564,6 +590,16 @@ return [
                     'type' => 'css',
                     'asset' => true,
                     'location' => 'vendor/summernote/summernote-bs4.min.css',
+                ],
+            ],
+        ],
+        'icheck-bootstrap' => [
+            'active' => true,
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'vendor/icheck-bootstrap/icheck-bootstrap.min.css',
                 ],
             ],
         ],

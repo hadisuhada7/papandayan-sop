@@ -10,6 +10,8 @@ use App\Models\StandardOperational;
 use App\Traits\LogsAuditTrail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class StandardOperationalController extends Controller
 {
@@ -64,42 +66,71 @@ class StandardOperationalController extends Controller
      */
     public function store(StoreStandardOperationalRequest $request)
     {
-        // Closure-based transaction
-        DB::transaction(function () use ($request) {
-            $validated = $request->validated();
-            $categoryIds = $validated['category_ids'] ?? [];
-            unset($validated['category_ids']);
+        try {
+            // Closure-based transaction
+            DB::transaction(function () use ($request) {
+                $validated = $request->validated();
+                $categoryIds = $validated['category_ids'] ?? [];
+                unset($validated['category_ids']);
 
-            // Remove documents data from validated
-            $documentNames = $request->input('document_names', []);
-            $documentTypes = $request->input('document_types', []);
-            $documentFiles = $request->file('documents', []);
-            
-            $standardOperational = StandardOperational::create($validated);
-            $standardOperational->categories()->sync($categoryIds);
-            
-            // Handle documents
-            if (!empty($documentNames) && !empty($documentFiles)) {
-                foreach ($documentNames as $index => $name) {
-                    if (isset($documentFiles[$index])) {
-                        $file = $documentFiles[$index];
-                        $originalName = $file->getClientOriginalName();
-                        $attachmentPath = $file->storeAs('documents', $originalName, 'public');
-                        
-                        $standardOperational->documents()->create([
-                            'name' => $name,
-                            'type' => $documentTypes[$index] ?? null,
-                            'attachment' => $attachmentPath,
-                        ]);
+                // Remove documents data from validated
+                $documentNames = $request->input('document_names', []);
+                $documentTypes = $request->input('document_types', []);
+                $documentFiles = $request->file('documents', []);
+                
+                $standardOperational = StandardOperational::create($validated);
+                $standardOperational->categories()->sync($categoryIds);
+                
+                // Handle documents
+                if (!empty($documentNames) && !empty($documentFiles)) {
+                    foreach ($documentNames as $index => $name) {
+                        if (isset($documentFiles[$index])) {
+                            $file = $documentFiles[$index];
+                            $originalName = $file->getClientOriginalName();
+                            $attachmentPath = $file->storeAs('documents', $originalName, 'public');
+                            
+                            $standardOperational->documents()->create([
+                                'name' => $name,
+                                'type' => $documentTypes[$index] ?? null,
+                                'attachment' => $attachmentPath,
+                            ]);
+                        }
                     }
                 }
-            }
-            
-            // Log audit trail
-            $this->logAuditTrail('Created Standard Operational', "Created SOP: {$standardOperational->title}");
-        });
+                
+                // Log audit trail
+                $this->logAuditTrail('Created Standard Operational', "Created SOP: {$standardOperational->title}");
+            });
 
-        return redirect()->route('admin.standard-operationals.index')->with('toast', ['type' => 'success', 'message' => 'Standard Operational created successfully.']);
+            if ($request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Standard Operational created successfully.',
+                    'redirect' => route('admin.standard-operationals.index', [], false),
+                ]);
+            }
+
+            return redirect()->route('admin.standard-operationals.index')->with('toast', ['type' => 'success', 'message' => 'Standard Operational created successfully.']);
+        } catch (Throwable $e) {
+            Log::error('Failed to store standard operational', [
+                'error' => $e->getMessage(),
+                'document_names_count' => count($request->input('document_names', [])),
+                'document_files_count' => count($request->file('documents', [])),
+                'user_id' => optional(auth()->user())->id,
+            ]);
+
+            if ($request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'message' => config('app.debug')
+                        ? $e->getMessage()
+                        : 'Failed to save Standard Operational. Please check document attachments and try again.',
+                ], 500);
+            }
+
+            return back()->withInput()->with('toast', [
+                'type' => 'error',
+                'message' => 'Failed to save Standard Operational. Please try again.',
+            ]);
+        }
     }
 
     /**
@@ -159,51 +190,81 @@ class StandardOperationalController extends Controller
      */
     public function update(UpdateStandardOperationalRequest $request, StandardOperational $standardOperational)
     {
-        // Closure-based transaction
-        DB::transaction(function () use ($request, $standardOperational) {
-            $validated = $request->validated();
-            $categoryIds = $validated['category_ids'] ?? [];
-            unset($validated['category_ids']);
+        try {
+            // Closure-based transaction
+            DB::transaction(function () use ($request, $standardOperational) {
+                $validated = $request->validated();
+                $categoryIds = $validated['category_ids'] ?? [];
+                unset($validated['category_ids']);
 
-            // Remove documents data from validated
-            $documentNames = $request->input('document_names', []);
-            $documentTypes = $request->input('document_types', []);
-            $documentFiles = $request->file('documents', []);
-            $existingDocumentIds = $request->input('existing_document_ids', []);
-            
-            $standardOperational->update($validated);
-            $standardOperational->categories()->sync($categoryIds);
-            
-            // Handle documents - delete documents not in the list
-            if (!empty($existingDocumentIds)) {
-                $standardOperational->documents()->whereNotIn('id', $existingDocumentIds)->delete();
-            } else {
-                // Delete all documents if none are submitted
-                $standardOperational->documents()->delete();
-            }
-            
-            // Add new documents
-            if (!empty($documentNames) && !empty($documentFiles)) {
-                foreach ($documentNames as $index => $name) {
-                    if (isset($documentFiles[$index])) {
-                        $file = $documentFiles[$index];
-                        $originalName = $file->getClientOriginalName();
-                        $attachmentPath = $file->storeAs('documents', $originalName, 'public');
-                        
-                        $standardOperational->documents()->create([
-                            'name' => $name,
-                            'type' => $documentTypes[$index] ?? null,
-                            'attachment' => $attachmentPath,
-                        ]);
+                // Remove documents data from validated
+                $documentNames = $request->input('document_names', []);
+                $documentTypes = $request->input('document_types', []);
+                $documentFiles = $request->file('documents', []);
+                $existingDocumentIds = $request->input('existing_document_ids', []);
+                
+                $standardOperational->update($validated);
+                $standardOperational->categories()->sync($categoryIds);
+                
+                // Handle documents - delete documents not in the list
+                if (!empty($existingDocumentIds)) {
+                    $standardOperational->documents()->whereNotIn('id', $existingDocumentIds)->delete();
+                } else {
+                    // Delete all documents if none are submitted
+                    $standardOperational->documents()->delete();
+                }
+                
+                // Add new documents
+                if (!empty($documentNames) && !empty($documentFiles)) {
+                    foreach ($documentNames as $index => $name) {
+                        if (isset($documentFiles[$index])) {
+                            $file = $documentFiles[$index];
+                            $originalName = $file->getClientOriginalName();
+                            $attachmentPath = $file->storeAs('documents', $originalName, 'public');
+                            
+                            $standardOperational->documents()->create([
+                                'name' => $name,
+                                'type' => $documentTypes[$index] ?? null,
+                                'attachment' => $attachmentPath,
+                            ]);
+                        }
                     }
                 }
-            }
-            
-            // Log audit trail
-            $this->logAuditTrail('Updated Standard Operational', "Updated SOP: {$standardOperational->title}");
-        });
+                
+                // Log audit trail
+                $this->logAuditTrail('Updated Standard Operational', "Updated SOP: {$standardOperational->title}");
+            });
 
-        return redirect()->route('admin.standard-operationals.index')->with('toast', ['type' => 'success', 'message' => 'Standard Operational updated successfully.']);
+            if ($request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Standard Operational updated successfully.',
+                    'redirect' => route('admin.standard-operationals.index', [], false),
+                ]);
+            }
+
+            return redirect()->route('admin.standard-operationals.index')->with('toast', ['type' => 'success', 'message' => 'Standard Operational updated successfully.']);
+        } catch (Throwable $e) {
+            Log::error('Failed to update standard operational', [
+                'standard_operational_id' => $standardOperational->id,
+                'error' => $e->getMessage(),
+                'document_names_count' => count($request->input('document_names', [])),
+                'document_files_count' => count($request->file('documents', [])),
+                'user_id' => optional(auth()->user())->id,
+            ]);
+
+            if ($request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'message' => config('app.debug')
+                        ? $e->getMessage()
+                        : 'Failed to update Standard Operational. Please check document attachments and try again.',
+                ], 500);
+            }
+
+            return back()->withInput()->with('toast', [
+                'type' => 'error',
+                'message' => 'Failed to update Standard Operational. Please try again.',
+            ]);
+        }
     }
 
     /**
@@ -222,5 +283,27 @@ class StandardOperationalController extends Controller
         });
 
         return redirect()->route('admin.standard-operationals.index')->with('toast', ['type' => 'success', 'message' => 'Standard Operational deleted successfully.']);
+    }
+
+    /**
+     * Upload image from Summernote editor.
+     */
+    public function uploadSummernoteImage(Request $request)
+    {
+        $request->validate([
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'], // Max 2MB
+        ]);
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $path = $image->storeAs('summernote-images', $filename, 'public');
+            
+            return response()->json([
+                'url' => asset('storage/' . $path)
+            ]);
+        }
+
+        return response()->json(['error' => 'No image uploaded'], 400);
     }
 }

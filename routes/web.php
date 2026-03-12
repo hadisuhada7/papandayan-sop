@@ -20,7 +20,7 @@ Route::get('/dashboard', function () {
 
     // Super Admin sees all categories from all companies
     if ($user && $user->hasRole('super_admin')) {
-        $categories = Category::with(['standardOperationals', 'policyLetters', 'company'])
+        $categories = Category::with(['standardOperationals.formDocuments', 'policyLetters', 'company'])
             ->withCount(['standardOperationals', 'policyLetters'])
             ->get();
     }
@@ -30,7 +30,7 @@ Route::get('/dashboard', function () {
         $categories = $user->userDetail->categories()
             ->where('company_id', $selectedCompanyId)
             ->with(['standardOperationals' => function ($query) use ($selectedCompanyId) {
-                $query->where('company_id', $selectedCompanyId);
+                $query->where('company_id', $selectedCompanyId)->with('formDocuments');
             }, 'policyLetters' => function ($query) use ($selectedCompanyId) {
                 $query->where('company_id', $selectedCompanyId);
             }, 'company'])
@@ -42,7 +42,7 @@ Route::get('/dashboard', function () {
     else {
         $categories = Category::where('company_id', $selectedCompanyId)
             ->with(['standardOperationals' => function ($query) use ($selectedCompanyId) {
-                $query->where('company_id', $selectedCompanyId);
+                $query->where('company_id', $selectedCompanyId)->with('formDocuments');
             }, 'policyLetters' => function ($query) use ($selectedCompanyId) {
                 $query->where('company_id', $selectedCompanyId);
             }, 'company'])
@@ -78,10 +78,12 @@ Route::middleware(['auth', 'company.selected'])->group(function () {
 
         Route::middleware('can:manage standard operationals')->group(function () {
             Route::resource('standard-operationals', StandardOperationalController::class);
+            Route::post('upload-summernote-image', [StandardOperationalController::class, 'uploadSummernoteImage'])->name('upload-summernote-image');
         });
 
         Route::middleware('can:manage policy letters')->group(function () {
             Route::resource('policy-letters', PolicyLetterController::class);
+            Route::post('upload-summernote-image', [PolicyLetterController::class, 'uploadSummernoteImage'])->name('upload-summernote-image');
         });
 
         Route::middleware('can:manage audit trails')->group(function () {

@@ -2,6 +2,7 @@
 
 @section('title', 'Papandayan | Dashboard')
 
+@section('plugins.Datatables', true)
 @section('plugins.Toastr', true)
 
 @section('content_header')
@@ -161,6 +162,50 @@
                                                             <h6>Standard Operational Procedure</h6>
                                                             <div class="standardRichText">{!! $standardOperational->rules !!}</div>
                                                         </div>
+                                                        
+                                                        <!-- Table Documents -->
+                                                        @if($standardOperational->formDocuments->count() > 0)
+                                                            <div class="standardInfoBlock">
+                                                                <h6>Form Attachments</h6>
+                                                                <div class="table-documents">
+                                                                    <table id="datagrid" class="table table-bordered table-hover">
+                                                                        <thead class="bg-light">
+                                                                            <tr>
+                                                                                <th style="width: 30px;">No</th>
+                                                                                <th style="width: 300px;">Name</th>
+                                                                                <th style="width: 150px;">Type</th>
+                                                                                <th scope="col">Attachment</th>
+                                                                                <th style="width: 35px;">&nbsp;</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            @php
+                                                                                $index = 1; 
+                                                                            @endphp
+                                                                            @foreach($standardOperational->formDocuments as $document)
+                                                                                <tr>
+                                                                                    <td scope="row">{{ $index }}</td>
+                                                                                    <td>{{ $document->name }}</td>
+                                                                                    <td>{{ strtoupper($document->type) }}</td>
+                                                                                    <td>{{ basename($document->attachment) }}</td>
+                                                                                    <td class="text-center">
+                                                                                        @if($document->attachment)
+                                                                                            <a href="{{ Storage::url($document->attachment) }}" target="_blank" class="btn btn-sm btn-success" title="Download Document">
+                                                                                                <i class="fas fa-download"></i>
+                                                                                            </a>
+                                                                                        @endif
+                                                                                    </td>
+                                                                                </tr>
+                                                                                @php 
+                                                                                    $index++;
+                                                                                @endphp
+                                                                            @endforeach
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        @endif
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -350,8 +395,8 @@
         .standardInfoGrid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 20px;
-            margin-bottom: 24px;
+            gap: 25px;
+            margin-bottom: 10px;
         }
 
         .standardInfoBlock h6 {

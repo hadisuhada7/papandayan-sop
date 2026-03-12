@@ -10,6 +10,8 @@ use App\Models\PolicyLetter;
 use App\Traits\LogsAuditTrail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class PolicyLetterController extends Controller
 {
@@ -65,40 +67,69 @@ class PolicyLetterController extends Controller
      */
     public function store(StorePolicyLetterRequest $request)
     {
-        // Closure-based transaction
-        DB::transaction(function () use ($request) {
-            $validated = $request->validated();
-            $categoryIds = $validated['category_ids'] ?? [];
-            unset($validated['category_ids']);
+        try {
+            // Closure-based transaction
+            DB::transaction(function () use ($request) {
+                $validated = $request->validated();
+                $categoryIds = $validated['category_ids'] ?? [];
+                unset($validated['category_ids']);
 
-            // Remove documents data from validated
-            $documentNames = $request->input('document_names', []);
-            $documentFiles = $request->file('documents', []);
-            
-            $policyLetter = PolicyLetter::create($validated);
-            $policyLetter->categories()->sync($categoryIds);
-            
-            // Handle documents
-            if (!empty($documentNames) && !empty($documentFiles)) {
-                foreach ($documentNames as $index => $name) {
-                    if (isset($documentFiles[$index])) {
-                        $file = $documentFiles[$index];
-                        $originalName = $file->getClientOriginalName();
-                        $attachmentPath = $file->storeAs('documents', $originalName, 'public');
-                        
-                        $policyLetter->documents()->create([
-                            'name' => $name,
-                            'attachment' => $attachmentPath,
-                        ]);
+                // Remove documents data from validated
+                $documentNames = $request->input('document_names', []);
+                $documentFiles = $request->file('documents', []);
+                
+                $policyLetter = PolicyLetter::create($validated);
+                $policyLetter->categories()->sync($categoryIds);
+                
+                // Handle documents
+                if (!empty($documentNames) && !empty($documentFiles)) {
+                    foreach ($documentNames as $index => $name) {
+                        if (isset($documentFiles[$index])) {
+                            $file = $documentFiles[$index];
+                            $originalName = $file->getClientOriginalName();
+                            $attachmentPath = $file->storeAs('documents', $originalName, 'public');
+                            
+                            $policyLetter->documents()->create([
+                                'name' => $name,
+                                'attachment' => $attachmentPath,
+                            ]);
+                        }
                     }
                 }
-            }
-            
-            // Log audit trail
-            $this->logAuditTrail('Created Policy Letter', "Created Policy Letter: {$policyLetter->title}");
-        });
+                
+                // Log audit trail
+                $this->logAuditTrail('Created Policy Letter', "Created Policy Letter: {$policyLetter->title}");
+            });
 
-        return redirect()->route('admin.policy-letters.index')->with('toast', ['type' => 'success', 'message' => 'Policy Letter created successfully.']);
+            if ($request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Policy Letter created successfully.',
+                    'redirect' => route('admin.policy-letters.index', [], false),
+                ]);
+            }
+
+            return redirect()->route('admin.policy-letters.index')->with('toast', ['type' => 'success', 'message' => 'Policy Letter created successfully.']);
+        } catch (Throwable $e) {
+            Log::error('Failed to store policy letter', [
+                'error' => $e->getMessage(),
+                'document_names_count' => count($request->input('document_names', [])),
+                'document_files_count' => count($request->file('documents', [])),
+                'user_id' => optional(auth()->user())->id,
+            ]);
+
+            if ($request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'message' => config('app.debug')
+                        ? $e->getMessage()
+                        : 'Failed to save Policy Letter. Please check document attachments and try again.',
+                ], 500);
+            }
+
+            return back()->withInput()->with('toast', [
+                'type' => 'error',
+                'message' => 'Failed to save Policy Letter. Please try again.',
+            ]);
+        }
     }
 
     /**
@@ -158,49 +189,79 @@ class PolicyLetterController extends Controller
      */
     public function update(UpdatePolicyLetterRequest $request, PolicyLetter $policyLetter)
     {
+        try {
         // Closure-based transaction
-        DB::transaction(function () use ($request, $policyLetter) {
-            $validated = $request->validated();
-            $categoryIds = $validated['category_ids'] ?? [];
-            unset($validated['category_ids']);
+            DB::transaction(function () use ($request, $policyLetter) {
+                $validated = $request->validated();
+                $categoryIds = $validated['category_ids'] ?? [];
+                unset($validated['category_ids']);
 
-            // Remove documents data from validated
-            $documentNames = $request->input('document_names', []);
-            $documentFiles = $request->file('documents', []);
-            $existingDocumentIds = $request->input('existing_document_ids', []);
-            
-            $policyLetter->update($validated);
-            $policyLetter->categories()->sync($categoryIds);
-            
-            // Handle documents - delete documents not in the list
-            if (!empty($existingDocumentIds)) {
-                $policyLetter->documents()->whereNotIn('id', $existingDocumentIds)->delete();
-            } else {
-                // Delete all documents if none are submitted
-                $policyLetter->documents()->delete();
-            }
-            
-            // Add new documents
-            if (!empty($documentNames) && !empty($documentFiles)) {
-                foreach ($documentNames as $index => $name) {
-                    if (isset($documentFiles[$index])) {
-                        $file = $documentFiles[$index];
-                        $originalName = $file->getClientOriginalName();
-                        $attachmentPath = $file->storeAs('documents', $originalName, 'public');
-                        
-                        $policyLetter->documents()->create([
-                            'name' => $name,
-                            'attachment' => $attachmentPath,
-                        ]);
+                // Remove documents data from validated
+                $documentNames = $request->input('document_names', []);
+                $documentFiles = $request->file('documents', []);
+                $existingDocumentIds = $request->input('existing_document_ids', []);
+                
+                $policyLetter->update($validated);
+                $policyLetter->categories()->sync($categoryIds);
+                
+                // Handle documents - delete documents not in the list
+                if (!empty($existingDocumentIds)) {
+                    $policyLetter->documents()->whereNotIn('id', $existingDocumentIds)->delete();
+                } else {
+                    // Delete all documents if none are submitted
+                    $policyLetter->documents()->delete();
+                }
+                
+                // Add new documents
+                if (!empty($documentNames) && !empty($documentFiles)) {
+                    foreach ($documentNames as $index => $name) {
+                        if (isset($documentFiles[$index])) {
+                            $file = $documentFiles[$index];
+                            $originalName = $file->getClientOriginalName();
+                            $attachmentPath = $file->storeAs('documents', $originalName, 'public');
+                            
+                            $policyLetter->documents()->create([
+                                'name' => $name,
+                                'attachment' => $attachmentPath,
+                            ]);
+                        }
                     }
                 }
-            }
-            
-            // Log audit trail
-            $this->logAuditTrail('Updated Policy Letter', "Updated Policy Letter: {$policyLetter->title}");
-        });
+                
+                // Log audit trail
+                $this->logAuditTrail('Updated Policy Letter', "Updated Policy Letter: {$policyLetter->title}");
+            });
 
-        return redirect()->route('admin.policy-letters.index')->with('toast', ['type' => 'success', 'message' => 'Policy Letter updated successfully.']);
+            if ($request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Policy Letter updated successfully.',
+                    'redirect' => route('admin.policy-letters.index', [], false),
+                ]);
+            }
+
+            return redirect()->route('admin.policy-letters.index')->with('toast', ['type' => 'success', 'message' => 'Policy Letter updated successfully.']);
+        } catch (Throwable $e) {
+            Log::error('Failed to update policy letter', [
+                'policy_letter_id' => $policyLetter->id,
+                'error' => $e->getMessage(),
+                'document_names_count' => count($request->input('document_names', [])),
+                'document_files_count' => count($request->file('documents', [])),
+                'user_id' => optional(auth()->user())->id,
+            ]);
+
+            if ($request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'message' => config('app.debug')
+                        ? $e->getMessage()
+                        : 'Failed to update Policy Letter. Please check document attachments and try again.',
+                ], 500);
+            }
+
+            return back()->withInput()->with('toast', [
+                'type' => 'error',
+                'message' => 'Failed to update Policy Letter. Please try again.',
+            ]);
+        }
     }
 
     /**
@@ -219,5 +280,27 @@ class PolicyLetterController extends Controller
         });
 
         return redirect()->route('admin.policy-letters.index')->with('toast', ['type' => 'success', 'message' => 'Policy Letter deleted successfully.']);
+    }
+
+    /**
+     * Upload image from Summernote editor.
+     */
+    public function uploadSummernoteImage(Request $request)
+    {
+        $request->validate([
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'], // Max 2MB
+        ]);
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $path = $image->storeAs('summernote-images', $filename, 'public');
+            
+            return response()->json([
+                'url' => asset('storage/' . $path)
+            ]);
+        }
+
+        return response()->json(['error' => 'No image uploaded'], 400);
     }
 }
