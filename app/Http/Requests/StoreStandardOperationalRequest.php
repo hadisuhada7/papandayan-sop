@@ -35,7 +35,7 @@ class StoreStandardOperationalRequest extends FormRequest
             'document_types' => ['nullable', 'array'],
             'document_types.*' => ['required_with:documents.*', 'string', 'in:sop,form'],
             'documents' => ['nullable', 'array'],
-            'documents.*' => ['required_with:document_names.*', 'file', 'mimes:pdf', 'max:5120'],
+            'documents.*' => ['required_with:document_names.*', 'file', 'mimes:pdf,doc,docx,xls,xlsx', 'max:5120'],
         ];
     }
 }

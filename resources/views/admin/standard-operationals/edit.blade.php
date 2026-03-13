@@ -223,7 +223,7 @@
                                 <div class="form-group">
                                     <label for="document_attachment">Attachment <span class="text-danger">*</span></label>
                                     <div id="documentDropzone" class="dropzone"></div>
-                                    <small class="text-muted">Upload PDF file (Max: 5MB)</small>
+                                    <small class="text-muted">Upload PDF, DOC, DOCX, XLS, XLSX file (Max: 5MB)</small>
                                 </div>
                             </form>
                         </div>
@@ -453,11 +453,11 @@
                 clickable: true,
                 maxFiles: 1,
                 maxFilesize: 5,
-                acceptedFiles: '.pdf',
+                acceptedFiles: '.pdf,.doc,.docx,.xls,.xlsx',
                 addRemoveLinks: true,
                 dictDefaultMessage: '<i class="fa fa-upload fa-3x" style="display: block; margin-bottom: 10px; color: #007bff;"></i><p style="margin: 0; font-size: 16px;">Drag and drop a file here or click to upload</p>',
                 dictFileTooBig: 'File size must not exceed 5MB.',
-                dictInvalidFileType: 'You can only upload PDF files.',
+                dictInvalidFileType: 'You can only upload PDF, DOC, DOCX, XLS, XLSX files.',
                 dictMaxFilesExceeded: 'You can only upload 1 file.',
                 dictRemoveFile: 'Remove file',
                 init: function() {
@@ -556,7 +556,7 @@
                 }
                 
                 if (files.length === 0) {
-                    toastr.warning('Please upload a PDF file.');
+                    toastr.warning('Please upload a PDF, DOC, DOCX, XLS, XLSX file.');
                     return;
                 }
                 
