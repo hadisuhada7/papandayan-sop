@@ -549,108 +549,108 @@
         // Enhanced Screenshot Protection (Multi-layer approach)
         document.addEventListener('DOMContentLoaded', function() {
             // Create blur overlay
-            // var blurOverlay = document.createElement('div');
-            // blurOverlay.id = 'blur-overlay';
-            // blurOverlay.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.98); z-index:99999; backdrop-filter:blur(20px);';
-            // blurOverlay.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100%; font-size:24px; color:#d33; font-weight:bold; flex-direction:column;"><i class="fas fa-shield-alt" style="font-size:64px; margin-bottom:20px;"></i><div>⚠️ PROTECTED CONTENT</div><div style="font-size:16px; margin-top:10px;">Screenshots Detected</div></div>';
-            // document.body.appendChild(blurOverlay);
+            var blurOverlay = document.createElement('div');
+            blurOverlay.id = 'blur-overlay';
+            blurOverlay.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.98); z-index:99999; backdrop-filter:blur(20px);';
+            blurOverlay.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100%; font-size:24px; color:#d33; font-weight:bold; flex-direction:column;"><i class="fas fa-shield-alt" style="font-size:64px; margin-bottom:20px;"></i><div>PROTECTED CONTENT</div><div style="font-size:16px; margin-top:5px;">Screenshots Detected</div></div>';
+            document.body.appendChild(blurOverlay);
 
-            // var isBlurred = false;
+            var isBlurred = false;
             
             // Show blur overlay function
-            // function showBlurOverlay() {
-            //     isBlurred = true;
-            //     document.getElementById('blur-overlay').style.display = 'block';
-            //     toastr.error('Screenshot attempt detected! Content hidden.');
-            // }
+            function showBlurOverlay() {
+                isBlurred = true;
+                document.getElementById('blur-overlay').style.display = 'block';
+                // toastr.error('Screenshot attempt detected! Content hidden.');
+            }
             
             // Hide blur overlay function
-            // function hideBlurOverlay() {
-            //     setTimeout(function() {
-            //         isBlurred = false;
-            //         document.getElementById('blur-overlay').style.display = 'none';
-            //     }, 1000);
-            // }
+            function hideBlurOverlay() {
+                setTimeout(function() {
+                    isBlurred = false;
+                    document.getElementById('blur-overlay').style.display = 'none';
+                }, 1000);
+            }
 
             // Detect Print Screen key
-            // document.addEventListener('keyup', function(e) {
-            //     if (e.key === 'PrintScreen' || e.keyCode === 44) {
-            //         navigator.clipboard.writeText('');
-            //         showBlurOverlay();
-            //         setTimeout(hideBlurOverlay, 3000);
-            //     }
-            // });
+            document.addEventListener('keyup', function(e) {
+                if (e.key === 'PrintScreen' || e.keyCode === 44) {
+                    navigator.clipboard.writeText('');
+                    showBlurOverlay();
+                    setTimeout(hideBlurOverlay, 3000);
+                }
+            });
 
             // Detect screenshot shortcuts
-            // document.addEventListener('keydown', function(e) {
-            //     var isScreenshotKey = false;
+            document.addEventListener('keydown', function(e) {
+                var isScreenshotKey = false;
                 
-            //     // Print Screen
-            //     if (e.key === 'PrintScreen' || e.keyCode === 44) {
-            //         isScreenshotKey = true;
-            //     }
+                // Print Screen
+                if (e.key === 'PrintScreen' || e.keyCode === 44) {
+                    isScreenshotKey = true;
+                }
                 
-            //     // Windows Snipping Tool (Win + Shift + S)
-            //     if ((e.key === 's' || e.key === 'S') && e.shiftKey && e.metaKey) {
-            //         isScreenshotKey = true;
-            //     }
+                // Windows Snipping Tool (Win + Shift + S)
+                if ((e.key === 's' || e.key === 'S') && e.shiftKey && e.metaKey) {
+                    isScreenshotKey = true;
+                }
                 
-            //     // Mac Screenshot (Cmd + Shift + 3/4/5)
-            //     if (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4' || e.key === '5')) {
-            //         isScreenshotKey = true;
-            //     }
+                // Mac Screenshot (Cmd + Shift + 3/4/5)
+                if (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4' || e.key === '5')) {
+                    isScreenshotKey = true;
+                }
                 
-            //     if (isScreenshotKey) {
-            //         e.preventDefault();
-            //         showBlurOverlay();
-            //         setTimeout(hideBlurOverlay, 3000);
-            //         return false;
-            //     }
+                if (isScreenshotKey) {
+                    e.preventDefault();
+                    showBlurOverlay();
+                    setTimeout(hideBlurOverlay, 3000);
+                    return false;
+                }
                 
-            //     // Disable common developer tools shortcuts
-            //     if (e.keyCode === 123 || 
-            //         (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
-            //         (e.ctrlKey && e.keyCode === 85)) {
-            //         e.preventDefault();
-            //         toastr.warning('Developer tools are disabled!');
-            //         return false;
-            //     }
-            // });
+                // Disable common developer tools shortcuts
+                if (e.keyCode === 123 || 
+                    (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
+                    (e.ctrlKey && e.keyCode === 85)) {
+                    e.preventDefault();
+                    toastr.warning('Developer tools are disabled!');
+                    return false;
+                }
+            });
 
             // Hide content when window loses focus (user switched to snipping tool)
-            // var blurTimeout;
-            // window.addEventListener('blur', function() {
-            //     blurTimeout = setTimeout(function() {
-            //         showBlurOverlay();
-            //     }, 100);
-            // });
+            var blurTimeout;
+            window.addEventListener('blur', function() {
+                blurTimeout = setTimeout(function() {
+                    showBlurOverlay();
+                }, 100);
+            });
 
-            // window.addEventListener('focus', function() {
-            //     clearTimeout(blurTimeout);
-            //     if (isBlurred) {
-            //         hideBlurOverlay();
-            //     }
-            // });
+            window.addEventListener('focus', function() {
+                clearTimeout(blurTimeout);
+                if (isBlurred) {
+                    hideBlurOverlay();
+                }
+            });
 
             // Detect visibility changes (tab switching, minimizing)
-            // document.addEventListener('visibilitychange', function() {
-            //     if (document.hidden) {
-            //         showBlurOverlay();
-            //     } else {
-            //         hideBlurOverlay();
-            //     }
-            // });
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    showBlurOverlay();
+                } else {
+                    hideBlurOverlay();
+                }
+            });
 
             // Periodic warning
-            // setInterval(function() {
-            //     if (!isBlurred && Math.random() > 0.95) {
-            //         toastr.warning('This content is protected. Screenshots are monitored.', '', {timeOut: 2000});
-            //     }
-            // }, 60000);
+            setInterval(function() {
+                if (!isBlurred && Math.random() > 0.95) {
+                    toastr.warning('This content is protected. Screenshots are monitored.', '', {timeOut: 2000});
+                }
+            }, 60000);
 
             // Show initial warning
             // setTimeout(function() {
-            //     toastr.info('Screenshot protection is active', '', {timeOut: 3000});
+            //     toastr.info('Screenshot protection is active', '', {timeOut: 2000});
             // }, 1000);
         });
     </script>
