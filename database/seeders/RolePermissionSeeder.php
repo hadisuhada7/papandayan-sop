@@ -21,6 +21,7 @@ class RolePermissionSeeder extends Seeder
             'manage categories',
             'manage standard operationals',
             'manage policy letters',
+            'manage internal memos',
             'manage audit trails',
         ];
 
@@ -42,6 +43,7 @@ class RolePermissionSeeder extends Seeder
             'manage categories',
             'manage standard operationals',
             'manage policy letters',
+            'manage internal memos',
             'manage audit trails',
         ];
 
@@ -72,6 +74,7 @@ class RolePermissionSeeder extends Seeder
             'manage categories',
             'manage standard operationals',
             'manage policy letters',
+            'manage internal memos',
             'manage audit trails',
         ];
 

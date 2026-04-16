@@ -23,6 +23,7 @@ class Document extends Model
         'type',
         'standard_operational_id',
         'policy_letter_id',
+        'internal_memo_id',
     ];
 
     // Constants
@@ -37,6 +38,11 @@ class Document extends Model
     public function policyLetter()
     {
         return $this->belongsTo(PolicyLetter::class, 'policy_letter_id');
+    }
+
+    public function internalMemo()
+    {
+        return $this->belongsTo(InternalMemo::class, 'internal_memo_id');
     }
 
     // Scopes

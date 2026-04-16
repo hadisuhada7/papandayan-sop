@@ -40,4 +40,9 @@ class Category extends Model
     {
         return $this->belongsToMany(PolicyLetter::class, 'category_policy_letter');
     }
+
+    public function internalMemos()
+    {
+        return $this->belongsToMany(InternalMemo::class, 'category_internal_memo');
+    }
 }
