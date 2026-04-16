@@ -73,6 +73,12 @@ class InternalMemoController extends Controller
                 $categoryIds = $validated['category_ids'] ?? [];
                 unset($validated['category_ids']);
 
+                // Handle no_expired_date checkbox
+                if (!empty($validated['no_expired_date'])) {
+                    $validated['expired_date'] = null;
+                }
+                unset($validated['no_expired_date']);
+
                 // Remove documents data from validated
                 $documentNames = $request->input('document_names', []);
                 $documentFiles = $request->file('documents', []);
@@ -194,6 +200,12 @@ class InternalMemoController extends Controller
                 $validated = $request->validated();
                 $categoryIds = $validated['category_ids'] ?? [];
                 unset($validated['category_ids']);
+
+                // Handle no_expired_date checkbox
+                if (!empty($validated['no_expired_date'])) {
+                    $validated['expired_date'] = null;
+                }
+                unset($validated['no_expired_date']);
 
                 // Remove documents data from validated
                 $documentNames = $request->input('document_names', []);

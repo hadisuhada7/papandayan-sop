@@ -49,7 +49,7 @@
                                     <td>{{ $internalMemo->title }}</td>
                                     <td>{{ $internalMemo->document_number }}</td>
                                     <td>{{ $internalMemo->effective_date->format('d F Y') }}</td>
-                                    <td>{{ $internalMemo->expired_date->format('d F Y') }}</td>
+                                    <td>{{ $internalMemo->expired_date ? $internalMemo->expired_date->format('d F Y') : '-' }}</td>
                                     <td>
                                         @if($internalMemo->categories->count())
                                             @foreach($internalMemo->categories as $category)

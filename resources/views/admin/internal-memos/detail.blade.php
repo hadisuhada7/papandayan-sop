@@ -60,7 +60,7 @@
                         </div>
                         <div class="col-md-4">
                             <strong>Expired Date:</strong>
-                            <p>{{ $internalMemo->expired_date->format('d F Y') }}</p>
+                            <p>{{ $internalMemo->expired_date ? $internalMemo->expired_date->format('d F Y') : '-' }}</p>
                         </div>
                     </div>
                     <!-- <div class="row">

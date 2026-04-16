@@ -105,15 +105,21 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="expiredDate" class="col-sm-2 col-form-label">Expired Date <span class="text-danger">*</span></label>
+                                    <label for="expiredDate" class="col-sm-2 col-form-label">Expired Date <span class="text-danger" id="expiredDateRequired">*</span></label>
                                     <div class="col-sm-4">
                                         <div class="input-group date" id="expiredDate" data-target-input="nearest">
-                                            <input type="text" class="form-control datetimepicker-input" name="expired_date" value="{{ old('expired_date') }}" data-target="#expiredDate" placeholder="dd-MM-yyyy" required/>
+                                            <input type="text" class="form-control datetimepicker-input" id="expiredDateInput" name="expired_date" value="{{ old('expired_date') }}" data-target="#expiredDate" placeholder="dd-MM-yyyy" required/>
                                             <div class="input-group-append" data-target="#expiredDate" data-toggle="datetimepicker">
                                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                                             </div>
                                         </div>
                                         <span class="error invalid-feedback">{{ $errors->first('expired_date') }}</span>
+                                    </div>
+                                    <div class="col-sm-3 d-flex align-items-center">
+                                        <div class="icheck-primary">
+                                            <input type="checkbox" id="noExpiredDate" name="no_expired_date" value="1" {{ old('no_expired_date') ? 'checked' : '' }}>
+                                            <label for="noExpiredDate">No Expired Date</label>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -342,6 +348,21 @@
             $('#effectiveDate, #expiredDate').datetimepicker({
                 format: 'DD-MM-YYYY'
             });
+
+            // No Expired Date checkbox toggle
+            function toggleExpiredDate() {
+                var checked = $('#noExpiredDate').is(':checked');
+                $('#expiredDateInput').prop('disabled', checked).val('');
+                $('#expiredDate .input-group-append').toggleClass('disabled', checked);
+                $('#expiredDateRequired').toggle(!checked);
+                if (checked) {
+                    $('#expiredDateInput').removeAttr('required');
+                } else {
+                    $('#expiredDateInput').attr('required', true);
+                }
+            }
+            toggleExpiredDate();
+            $('#noExpiredDate').on('change', toggleExpiredDate);
 
             //Initialize Select2 Elements
             $('.select2bs4').select2({
