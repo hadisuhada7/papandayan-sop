@@ -22,6 +22,7 @@ class RolePermissionSeeder extends Seeder
             'manage standard operationals',
             'manage policy letters',
             'manage internal memos',
+            'manage meeting memos',
             'manage audit trails',
         ];
 
@@ -44,6 +45,7 @@ class RolePermissionSeeder extends Seeder
             'manage standard operationals',
             'manage policy letters',
             'manage internal memos',
+            'manage meeting memos',
             'manage audit trails',
         ];
 
@@ -75,6 +77,7 @@ class RolePermissionSeeder extends Seeder
             'manage standard operationals',
             'manage policy letters',
             'manage internal memos',
+            'manage meeting memos',
             'manage audit trails',
         ];
 

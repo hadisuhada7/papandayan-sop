@@ -339,10 +339,16 @@ return [
             'icon' => 'fas fa-fw fa-file-alt',
             'role' => ['admin', 'super_admin'],
         ],
+        // [
+        //     'text' => 'Internal Memos',
+        //     'url' => 'admin/internal-memos',
+        //     'icon' => 'fas fa-fw fa-envelope-open-text',
+        //     'role' => ['admin', 'super_admin'],
+        // ],
         [
-            'text' => 'Internal Memos',
-            'url' => 'admin/internal-memos',
-            'icon' => 'fas fa-fw fa-envelope-open-text',
+            'text' => 'Meeting Memos',
+            'url' => 'admin/meeting-memos',
+            'icon' => 'fas fa-fw fa-copy',
             'role' => ['admin', 'super_admin'],
         ],
         [

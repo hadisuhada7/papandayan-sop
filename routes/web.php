@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\StandardOperationalController;
 use App\Http\Controllers\PolicyLetterController;
 use App\Http\Controllers\InternalMemoController;
+use App\Http\Controllers\MeetingMemoController;
 use App\Http\Controllers\UserDetailController;
 use App\Http\Controllers\AuditTrailController;
 use Illuminate\Support\Facades\Route;
@@ -21,8 +22,8 @@ Route::get('/dashboard', function () {
 
     // Super Admin sees all categories from all companies
     if ($user && $user->hasRole('super_admin')) {
-        $categories = Category::with(['standardOperationals.formDocuments', 'policyLetters', 'internalMemos', 'company'])
-            ->withCount(['standardOperationals', 'policyLetters', 'internalMemos'])
+        $categories = Category::with(['standardOperationals.formDocuments', 'policyLetters', 'internalMemos', 'meetingMemos', 'company'])
+            ->withCount(['standardOperationals', 'policyLetters', 'internalMemos', 'meetingMemos'])
             ->get();
     }
 
@@ -36,8 +37,10 @@ Route::get('/dashboard', function () {
                 $query->where('company_id', $selectedCompanyId);
             }, 'internalMemos' => function ($query) use ($selectedCompanyId) {
                 $query->where('company_id', $selectedCompanyId);
+            }, 'meetingMemos' => function ($query) use ($selectedCompanyId) {
+                $query->where('company_id', $selectedCompanyId);
             }, 'company'])
-            ->withCount(['standardOperationals', 'policyLetters', 'internalMemos'])
+            ->withCount(['standardOperationals', 'policyLetters', 'internalMemos', 'meetingMemos'])
             ->get();
     }
     
@@ -50,8 +53,10 @@ Route::get('/dashboard', function () {
                 $query->where('company_id', $selectedCompanyId);
             }, 'internalMemos' => function ($query) use ($selectedCompanyId) {
                 $query->where('company_id', $selectedCompanyId);
+            }, 'meetingMemos' => function ($query) use ($selectedCompanyId) {
+                $query->where('company_id', $selectedCompanyId);
             }, 'company'])
-            ->withCount(['standardOperationals', 'policyLetters', 'internalMemos'])
+            ->withCount(['standardOperationals', 'policyLetters', 'internalMemos', 'meetingMemos'])
             ->get();
     }
     
@@ -94,6 +99,11 @@ Route::middleware(['auth', 'company.selected'])->group(function () {
         Route::middleware('can:manage internal memos')->group(function () {
             Route::resource('internal-memos', InternalMemoController::class);
             Route::post('upload-summernote-image-memo', [InternalMemoController::class, 'uploadSummernoteImage'])->name('upload-summernote-image-memo');
+        });
+
+        Route::middleware('can:manage meeting memos')->group(function () {
+            Route::resource('meeting-memos', MeetingMemoController::class);
+            Route::post('upload-summernote-image-meeting-memo', [MeetingMemoController::class, 'uploadSummernoteImage'])->name('upload-summernote-image-meeting-memo');
         });
 
         Route::middleware('can:manage audit trails')->group(function () {

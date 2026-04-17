@@ -24,6 +24,7 @@ class Document extends Model
         'standard_operational_id',
         'policy_letter_id',
         'internal_memo_id',
+        'meeting_memo_id',
     ];
 
     // Constants
@@ -43,6 +44,11 @@ class Document extends Model
     public function internalMemo()
     {
         return $this->belongsTo(InternalMemo::class, 'internal_memo_id');
+    }
+
+    public function meetingMemo()
+    {
+        return $this->belongsTo(MeetingMemo::class, 'meeting_memo_id');
     }
 
     // Scopes

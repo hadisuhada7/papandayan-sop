@@ -91,6 +91,25 @@
                 </div>
             </div>
         @endforeach
+
+        <!-- Meeting Memos -->
+        @foreach($categories->where('meeting_memos_count', '>', 0) as $category)
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h5 style="font-weight: bold; margin-top: 10px; margin-bottom: 10px;">{{ $category->name }}</h5>
+                        @if(auth()->user()->hasRole('super_admin') && $category->company)
+                            <p style="font-size: 12px; margin-bottom: 5px;">{{ $category->company->name }}</p>
+                        @endif
+                        <p style="font-size: 16px; margin-bottom: 25px;">{{ $category->meeting_memos_count }}</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <a href="javascript:void(0);" class="small-box-footer" data-category-id="{{ $category->id }}" onclick="showAccordionMeetingMemo('{{ $category->id }}'); return false;">Read More <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+        @endforeach
     </div>
 
     <!-- Standard Operational Procedures -->
@@ -445,6 +464,178 @@
             </div>
         </div>
     </div>
+
+    <!-- Meeting Memos -->
+    <div class="row" id="meeting-memo-row" style="display:none;">
+        <div class="col-md-12">
+            <div class="card card-primary card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">Meeting Memos</h3>
+
+                    <div class="card-tools">
+                        <div class="input-group input-group-sm">
+                            <button type="button" class="btn btn-sm btn-default" onclick="showSmallBoxes()"><i class="fas fa-arrow-circle-left"></i> Back</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="accordion-meeting-memo">
+                        @foreach($categories as $category)
+                            <div class="accordion-category" id="accordion-meeting-memo-category-{{ $category->id }}" style="display:none;">
+                                <h5>{{ $category->name }}</h5>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="input-group mb-3">
+                                            <input type="text" class="form-control" id="searchMeetingMemo{{ $category->id }}" placeholder="Search" onkeyup="filterMeetingMemo('{{ $category->id }}')">
+                                            <span class="input-group-append">
+                                                <button type="button" class="btn btn-primary" onclick="filterMeetingMemo('{{ $category->id }}')">Search</button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                @forelse($category->meetingMemos as $meetingMemo)
+                                    <div class="card card-info mb-2">
+                                        <div class="card-header">
+                                            <h4 class="card-title w-100">
+                                                <a class="d-block w-100" data-toggle="collapse" href="#collapseMeetingMemo{{ $meetingMemo->id }}">
+                                                    {{ $meetingMemo->title }}
+
+                                                    <div class="float-right" style="font-size: 16px; font-weight: normal;">
+                                                       {{ $meetingMemo->document_number }}
+                                                       ({{ optional($meetingMemo->effective_date)->format('d M Y') ?? '-' }})
+                                                    </div>
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="collapseMeetingMemo{{ $meetingMemo->id }}" class="collapse" data-parent="#accordion-meeting-memo-category-{{ $category->id }}">
+                                            <div class="card-body">
+                                                <div class="standardDetailHeading no-copy">
+                                                    <ul class="standardMeta">
+                                                        <li>
+                                                            <div class="standardMetaLabelRow">
+                                                                <i class="fa fa-file-alt"></i>
+                                                                <span>Document Number</span>
+                                                            </div>
+                                                            <strong>{{ $meetingMemo->document_number ?? '-' }}</strong>
+                                                        </li>
+                                                        <li>
+                                                            <div class="standardMetaLabelRow">
+                                                                <i class="fa fa-calendar-check"></i>
+                                                                <span>Effective Date</span>
+                                                            </div>
+                                                            <strong>{{ optional($meetingMemo->effective_date)->format('d F Y') ?? '-' }}</strong>
+                                                        </li>
+                                                        <li>
+                                                            <div class="standardMetaLabelRow">
+                                                                <i class="fa fa-calendar-times"></i>
+                                                                <span>Expired Date</span>
+                                                            </div>
+                                                            <strong>{{ optional($meetingMemo->expired_date)->format('d F Y') ?? '-' }}</strong>
+                                                        </li>
+                                                        <li>
+                                                            <div class="standardMetaLabelRow">
+                                                                <i class="fa fa-folder-open"></i>
+                                                                <span>Category</span>
+                                                            </div>
+                                                            <strong>
+                                                                @if($meetingMemo->categories->count())
+                                                                    @foreach($meetingMemo->categories as $cat)
+                                                                        <span class="standardCategoryBadge">{{ $cat->name }}</span>
+                                                                    @endforeach
+                                                                @else
+                                                                    <span class="text-muted">Uncategorized</span>
+                                                                @endif
+                                                            </strong>
+                                                        </li>
+                                                    </ul>
+                                                    <div class="standardInfoGrid">
+                                                        <div class="standardInfoBlock">
+                                                            <h6>Meeting Memo</h6>
+                                                            <div class="standardRichText">{!! $meetingMemo->rules !!}</div>
+                                                        </div>
+
+                                                        <!-- Preview Documents -->
+                                                        <div class="standardInfoBlock">
+                                                            <h6>Preview Documents</h6>
+                                                            <div class="preview-documents">
+                                                                @if($meetingMemo->documents->count() > 0)
+                                                                    <ul class="list-group">
+                                                                        @foreach($meetingMemo->documents as $document)
+                                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                {{ $document->name }}
+                                                                                @if($document->attachment)
+                                                                                    <button type="button" class="btn btn-sm btn-info btn-preview-pdf" 
+                                                                                        data-url="{{ Storage::url($document->attachment) }}" 
+                                                                                        data-name="{{ $document->name }}" 
+                                                                                        title="Preview Document">
+                                                                                        <i class="fas fa-eye"></i>
+                                                                                    </button>
+                                                                                @endif
+                                                                            </li>
+                                                                        @endforeach
+                                                                    </ul>
+                                                                @else
+                                                                    <span class="text-muted">No documents available</span>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @empty
+                                @endforelse
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Preview Modal -->
+    <div class="modal fade" id="pdfPreviewModal" tabindex="-1" role="dialog" aria-labelledby="pdfPreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pdfPreviewModalLabel">Preview Document</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="pdfToolbar">
+                        <div class="pdf-toolbar-group">
+                            <button type="button" class="btn btn-sm btn-light" id="pdfPrevPage" title="Previous Page">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span class="pdf-page-info">
+                                <span id="pdfCurrentPage">1</span> / <span id="pdfTotalPages">1</span>
+                            </span>
+                            <button type="button" class="btn btn-sm btn-light" id="pdfNextPage" title="Next Page">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="pdf-toolbar-group">
+                            <button type="button" class="btn btn-sm btn-light" id="pdfZoomOut" title="Zoom Out">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <span class="pdf-zoom-info" id="pdfZoomLevel">100%</span>
+                            <button type="button" class="btn btn-sm btn-light" id="pdfZoomIn" title="Zoom In">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light" id="pdfZoomFit" title="Fit to Width">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="pdfContainer" style="height: 70vh; overflow: auto;" oncontextmenu="return false;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @stop
 
 @section('adminlte_css')
@@ -559,12 +750,214 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* PDF Toolbar */
+        #pdfToolbar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 8px 12px;
+            background: #f4f4f4;
+            border-bottom: 1px solid #ddd;
+            flex-wrap: wrap;
+        }
+
+        .pdf-toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pdf-page-info, .pdf-zoom-info {
+            font-size: 13px;
+            font-weight: 600;
+            min-width: 60px;
+            text-align: center;
+            color: #333;
+        }
+
+        #pdfToolbar .btn {
+            border: 1px solid #ccc;
+            padding: 4px 10px;
+        }
+
+        #pdfToolbar .btn:hover {
+            background: #e2e2e2;
+        }
+
+        /* PDF Preview */
+        #pdfContainer {
+            background: #525659;
+            text-align: center;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        #pdfContainer canvas {
+            display: block;
+            margin: 10px auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
     </style>
 @stop
 
 @section('adminlte_js')
     @include('partials.toastr')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
     <script type="text/javascript">
+        
+        // Set PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // PDF Viewer State
+        var pdfState = {
+            pdf: null,
+            currentScale: 1.5,
+            totalPages: 0,
+            baseScale: 1.5,
+            minScale: 0.5,
+            maxScale: 4.0,
+            scaleStep: 0.25
+        };
+
+        function renderAllPages() {
+            var container = document.getElementById('pdfContainer');
+            container.innerHTML = '';
+            if (!pdfState.pdf) return;
+
+            for (var i = 1; i <= pdfState.totalPages; i++) {
+                (function(pageNum) {
+                    pdfState.pdf.getPage(pageNum).then(function (page) {
+                        var viewport = page.getViewport({ scale: pdfState.currentScale });
+                        var canvas = document.createElement('canvas');
+                        canvas.className = 'pdf-page';
+                        canvas.setAttribute('data-page', pageNum);
+                        var context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        container.appendChild(canvas);
+
+                        page.render({
+                            canvasContext: context,
+                            viewport: viewport
+                        });
+                    });
+                })(i);
+            }
+
+            updateZoomLabel();
+        }
+
+        function updateZoomLabel() {
+            var percent = Math.round((pdfState.currentScale / pdfState.baseScale) * 100);
+            document.getElementById('pdfZoomLevel').textContent = percent + '%';
+        }
+
+        function updateCurrentPageOnScroll() {
+            var container = document.getElementById('pdfContainer');
+            var canvases = container.querySelectorAll('canvas.pdf-page');
+            var scrollTop = container.scrollTop + 50;
+            var currentPage = 1;
+
+            canvases.forEach(function(canvas) {
+                if (canvas.offsetTop <= scrollTop) {
+                    currentPage = parseInt(canvas.getAttribute('data-page'));
+                }
+            });
+
+            document.getElementById('pdfCurrentPage').textContent = currentPage;
+        }
+
+        function scrollToPage(pageNum) {
+            var container = document.getElementById('pdfContainer');
+            var canvas = container.querySelector('canvas[data-page="' + pageNum + '"]');
+            if (canvas) {
+                container.scrollTop = canvas.offsetTop - 10;
+            }
+        }
+
+        // Zoom In
+        document.getElementById('pdfZoomIn').addEventListener('click', function() {
+            if (pdfState.currentScale < pdfState.maxScale) {
+                pdfState.currentScale = Math.min(pdfState.currentScale + pdfState.scaleStep, pdfState.maxScale);
+                renderAllPages();
+            }
+        });
+
+        // Zoom Out
+        document.getElementById('pdfZoomOut').addEventListener('click', function() {
+            if (pdfState.currentScale > pdfState.minScale) {
+                pdfState.currentScale = Math.max(pdfState.currentScale - pdfState.scaleStep, pdfState.minScale);
+                renderAllPages();
+            }
+        });
+
+        // Fit to Width
+        document.getElementById('pdfZoomFit').addEventListener('click', function() {
+            if (!pdfState.pdf) return;
+            pdfState.pdf.getPage(1).then(function(page) {
+                var container = document.getElementById('pdfContainer');
+                var containerWidth = container.clientWidth - 20;
+                var viewport = page.getViewport({ scale: 1.0 });
+                pdfState.currentScale = containerWidth / viewport.width;
+                renderAllPages();
+            });
+        });
+
+        // Previous Page
+        document.getElementById('pdfPrevPage').addEventListener('click', function() {
+            var current = parseInt(document.getElementById('pdfCurrentPage').textContent);
+            if (current > 1) {
+                scrollToPage(current - 1);
+                document.getElementById('pdfCurrentPage').textContent = current - 1;
+            }
+        });
+
+        // Next Page
+        document.getElementById('pdfNextPage').addEventListener('click', function() {
+            var current = parseInt(document.getElementById('pdfCurrentPage').textContent);
+            if (current < pdfState.totalPages) {
+                scrollToPage(current + 1);
+                document.getElementById('pdfCurrentPage').textContent = current + 1;
+            }
+        });
+
+        // Track scroll for page indicator
+        document.getElementById('pdfContainer').addEventListener('scroll', updateCurrentPageOnScroll);
+
+        // PDF Preview
+        $(document).on('click', '.btn-preview-pdf', function () {
+            var pdfUrl = $(this).data('url');
+            var docName = $(this).data('name');
+            $('#pdfPreviewModalLabel').text('Preview: ' + docName);
+            $('#pdfContainer').html('');
+            pdfState.currentScale = pdfState.baseScale;
+
+            pdfjsLib.getDocument(pdfUrl).promise.then(function (pdf) {
+                pdfState.pdf = pdf;
+                pdfState.totalPages = pdf.numPages;
+                document.getElementById('pdfCurrentPage').textContent = '1';
+                document.getElementById('pdfTotalPages').textContent = pdf.numPages;
+                renderAllPages();
+            }).catch(function (error) {
+                $('#pdfContainer').html('<p class="text-white p-4">Failed to load PDF.</p>');
+            });
+
+            $('#pdfPreviewModal').modal('show');
+        });
+
+        // Reset state when modal is closed
+        $('#pdfPreviewModal').on('hidden.bs.modal', function () {
+            pdfState.pdf = null;
+            pdfState.totalPages = 0;
+            pdfState.currentScale = pdfState.baseScale;
+            $('#pdfContainer').html('');
+        });
+
         function showAccordionStandardOperational(categoryId) {
             // Hide Category row
             document.getElementById('category-row').style.display = 'none';
@@ -624,6 +1017,26 @@
             // Optionally scroll to Internal Memo row
             document.getElementById('internal-memo-row').scrollIntoView({behavior: 'smooth'});
         }
+
+        function showAccordionMeetingMemo(categoryId) {
+            // Hide Category row
+            document.getElementById('category-row').style.display = 'none';
+            
+            // Show Meeting Memo row
+            document.getElementById('meeting-memo-row').style.display = '';
+            
+            // Hide all Accordion Categories
+            document.querySelectorAll('.accordion-category').forEach(function(el) {
+                el.style.display = 'none';
+            });
+
+            // Show selected Category
+            var el = document.getElementById('accordion-meeting-memo-category-' + categoryId);
+            if (el) el.style.display = 'block';
+
+            // Optionally scroll to Meeting Memo row
+            document.getElementById('meeting-memo-row').scrollIntoView({behavior: 'smooth'});
+        }
         
         function showSmallBoxes() {
             // Show Category row
@@ -637,6 +1050,9 @@
             
             // Hide Internal Memo row
             document.getElementById('internal-memo-row').style.display = 'none';
+            
+            // Hide Meeting Memo row
+            document.getElementById('meeting-memo-row').style.display = 'none';
             
             // Scroll to top
             window.scrollTo({top: 0, behavior: 'smooth'});
@@ -674,6 +1090,20 @@
             var input = document.getElementById('searchInternalMemo' + categoryId);
             var filter = input.value.toLowerCase();
             var cards = document.querySelectorAll('#accordion-memo-category-' + categoryId + ' .card');
+            cards.forEach(function(card) {
+                var title = card.querySelector('.card-title a');
+                if (title && title.textContent.toLowerCase().indexOf(filter) > -1) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function filterMeetingMemo(categoryId) {
+            var input = document.getElementById('searchMeetingMemo' + categoryId);
+            var filter = input.value.toLowerCase();
+            var cards = document.querySelectorAll('#accordion-meeting-memo-category-' + categoryId + ' .card');
             cards.forEach(function(card) {
                 var title = card.querySelector('.card-title a');
                 if (title && title.textContent.toLowerCase().indexOf(filter) > -1) {

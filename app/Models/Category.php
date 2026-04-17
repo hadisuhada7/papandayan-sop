@@ -45,4 +45,9 @@ class Category extends Model
     {
         return $this->belongsToMany(InternalMemo::class, 'category_internal_memo');
     }
+
+    public function meetingMemos()
+    {
+        return $this->belongsToMany(MeetingMemo::class, 'category_meeting_memo');
+    }
 }
