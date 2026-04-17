@@ -144,13 +144,12 @@
                                     <div class="card card-info mb-2">
                                         <div class="card-header">
                                             <h4 class="card-title w-100">
-                                                <a class="d-block w-100" data-toggle="collapse" href="#collapseStandardOperational{{ $standardOperational->id }}">
-                                                    {{ $standardOperational->title }}
-
-                                                    <div class="float-right" style="font-size: 16px; font-weight: normal;">
+                                                <a class="d-block w-100 accordion-header-link" data-toggle="collapse" href="#collapseStandardOperational{{ $standardOperational->id }}">
+                                                    <span class="accordion-header-title">{{ $standardOperational->title }}</span>
+                                                    <span class="accordion-header-meta">
                                                        {{ $standardOperational->document_number }}
                                                        ({{ optional($standardOperational->effective_date)->format('d M Y') ?? '-' }})
-                                                    </div>
+                                                    </span>
                                                 </a>
                                             </h4>
                                         </div>
@@ -291,13 +290,12 @@
                                     <div class="card card-info mb-2">
                                         <div class="card-header">
                                             <h4 class="card-title w-100">
-                                                <a class="d-block w-100" data-toggle="collapse" href="#collapsePolicyLetter{{ $policyLetter->id }}">
-                                                    {{ $policyLetter->title }}
-
-                                                    <div class="float-right" style="font-size: 16px; font-weight: normal;">
+                                                <a class="d-block w-100 accordion-header-link" data-toggle="collapse" href="#collapsePolicyLetter{{ $policyLetter->id }}">
+                                                    <span class="accordion-header-title">{{ $policyLetter->title }}</span>
+                                                    <span class="accordion-header-meta">
                                                        {{ $policyLetter->document_number }}
                                                        ({{ optional($policyLetter->effective_date)->format('d M Y') ?? '-' }})
-                                                    </div>
+                                                    </span>
                                                 </a>
                                             </h4>
                                         </div>
@@ -394,13 +392,12 @@
                                     <div class="card card-info mb-2">
                                         <div class="card-header">
                                             <h4 class="card-title w-100">
-                                                <a class="d-block w-100" data-toggle="collapse" href="#collapseInternalMemo{{ $internalMemo->id }}">
-                                                    {{ $internalMemo->title }}
-
-                                                    <div class="float-right" style="font-size: 16px; font-weight: normal;">
+                                                <a class="d-block w-100 accordion-header-link" data-toggle="collapse" href="#collapseInternalMemo{{ $internalMemo->id }}">
+                                                    <span class="accordion-header-title">{{ $internalMemo->title }}</span>
+                                                    <span class="accordion-header-meta">
                                                        {{ $internalMemo->document_number }}
                                                        ({{ optional($internalMemo->effective_date)->format('d M Y') ?? '-' }})
-                                                    </div>
+                                                    </span>
                                                 </a>
                                             </h4>
                                         </div>
@@ -497,13 +494,12 @@
                                     <div class="card card-info mb-2">
                                         <div class="card-header">
                                             <h4 class="card-title w-100">
-                                                <a class="d-block w-100" data-toggle="collapse" href="#collapseMeetingMemo{{ $meetingMemo->id }}">
-                                                    {{ $meetingMemo->title }}
-
-                                                    <div class="float-right" style="font-size: 16px; font-weight: normal;">
+                                                <a class="d-block w-100 accordion-header-link" data-toggle="collapse" href="#collapseMeetingMemo{{ $meetingMemo->id }}">
+                                                    <span class="accordion-header-title">{{ $meetingMemo->title }}</span>
+                                                    <span class="accordion-header-meta">
                                                        {{ $meetingMemo->document_number }}
                                                        ({{ optional($meetingMemo->effective_date)->format('d M Y') ?? '-' }})
-                                                    </div>
+                                                    </span>
                                                 </a>
                                             </h4>
                                         </div>
@@ -642,7 +638,39 @@
     @if(auth()->check() && auth()->user()->hasRole('viewer'))
         <link rel="stylesheet" href="{{ asset('css/viewer-layout.css') }}">
     @endif
-    <style>
+
+    <style type="text/css">
+        /* Accordion Header Responsive */
+        .accordion-header-link {
+            display: flex !important;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .accordion-header-title {
+            flex: 1;
+            min-width: 0;
+        }
+        .accordion-header-meta {
+            font-size: 16px;
+            font-weight: normal;
+            white-space: nowrap;
+            margin-left: 10px;
+            text-align: right;
+        }
+        @media (max-width: 576px) {
+            .accordion-header-link {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .accordion-header-meta {
+                margin-left: 0;
+                margin-top: 4px;
+                font-size: 13px;
+                text-align: left;
+                white-space: normal;
+            }
+        }
+
         /* SOP Detail Styling */
         .standardDetailHeading {
             padding: 0px;
@@ -727,12 +755,28 @@
 
         .standardRichText {
             line-height: 1.7;
+            overflow-x: auto;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .standardRichText table {
+            width: 100%;
+            max-width: 100%;
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .standardRichText ul,
         .standardRichText ol {
             padding-left: 18px;
             margin-bottom: 0;
+        }
+
+        .table-documents {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         /* Prevent Copy or Select */
@@ -748,6 +792,18 @@
         @media (max-width: 768px) {
             .standardMeta {
                 grid-template-columns: 1fr;
+            }
+            .card-body {
+                padding: 10px;
+                overflow-x: hidden;
+            }
+            .standardDetailHeading {
+                max-width: 100%;
+                overflow-x: auto;
+            }
+            .standardRichText img {
+                max-width: 100%;
+                height: auto;
             }
         }
 
